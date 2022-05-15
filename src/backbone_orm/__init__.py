@@ -8,6 +8,6 @@ from .migration_abstract import MigrationAbstract
 from .postgres_transaction import PostgresTransaction
 from .postgres_connection import PostgresConnection
 from .api_resource_abstract import ApiResourceAbstract
-from .factory_abstract import FactoryAbstract
+from .factory_abstract import FactoryAbstract, U
 from .model_schema_abstract import ModelSchemaAbstract
 from .parameters import Parameters
