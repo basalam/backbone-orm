@@ -67,7 +67,7 @@ class Relation(ABC):
         pass
 
     @abstractmethod
-    def forget(self, model: "ModelAbstract", relation_key: str):
+    async def forget(self, model: "ModelAbstract", relation_key: str):
         pass
 
 
@@ -135,7 +135,7 @@ class BelongsTo(Relation):
                 new_caches[self.cache_key(model, relation_name)] = matches[0]
 
         if len(new_caches.keys()) > 0:
-            await self.local_repo.cache().mset(new_caches, self.cache_time_in_seconds)
+            await (await self.local_repo.cache()).mset(new_caches, self.cache_time_in_seconds)
 
         return models
 
@@ -144,7 +144,7 @@ class BelongsTo(Relation):
         if self.cache_time_in_seconds > 0:
             identifiers = []
             cache_keys = [self.cache_key(model, relation_name) for model in models]
-            caches = await self.local_repo.cache().mget(cache_keys)
+            caches = await (await self.local_repo.cache()).mget(cache_keys)
             for index, model in enumerate(models):
                 if caches[index] is not None:
                     model.set_relation(relation_name, caches[index])
@@ -166,13 +166,13 @@ class BelongsTo(Relation):
         # timestamp = model.__getattribute__(self.local_repo.updated_at_field()) if self.local_repo.updated_at_field() is not None else 0
         return f"relation::belongs_to::{table}::{identifier}::{relation_key}"
 
-    def forget(self, model: "ModelAbstract", relation_key: str):
-        self.local_repo.cache().forget(self.cache_key(model, relation_key))
+    async def forget(self, model: "ModelAbstract", relation_key: str):
+        await (await self.local_repo.cache()).forget(self.cache_key(model, relation_key))
 
 
 class HasOne(Relation):
-    def forget(self, model: "ModelAbstract", relation_key: str):
-        BelongsTo(
+    async def forget(self, model: "ModelAbstract", relation_key: str):
+        await BelongsTo(
             self.local_repo,
             self.relation_repo,
             self.local_key,
@@ -379,7 +379,7 @@ class BelongsToMany(Relation):
                 ]
 
         if len(new_caches.keys()) > 0:
-            await self.local_repo.cache().mset(new_caches, self.cache_time_in_seconds)
+            await (await self.local_repo.cache()).mset(new_caches, self.cache_time_in_seconds)
 
         return models
 
@@ -388,7 +388,7 @@ class BelongsToMany(Relation):
         if self.cache_time_in_seconds > 0:
             identifiers = []
             cache_keys = [self.cache_key(model, relation_key) for model in models]
-            caches = await self.local_repo.cache().mget(cache_keys)
+            caches = await (await self.local_repo.cache()).mget(cache_keys)
             for index, model in enumerate(models):
                 if caches[index] is not None:
                     model.set_relation(relation_key, caches[index])
@@ -412,5 +412,5 @@ class BelongsToMany(Relation):
         # timestamp = model.__getattribute__(self.local_repo.updated_at_field()) if self.local_repo.updated_at_field() is not None else 0
         return f"relation::belongs_to_many::{table}::{identifier}::{relation_key}"
 
-    def forget(self, model: "ModelAbstract", relation_key: str):
-        self.local_repo.cache().forget(self.cache_key(model, relation_key))
+    async def forget(self, model: "ModelAbstract", relation_key: str):
+        await (await self.local_repo.cache()).forget(self.cache_key(model, relation_key))
