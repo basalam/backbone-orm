@@ -49,11 +49,11 @@ def add_dot(x):
 
 class FakeAuthorRepo(RepositoryAbstract[FakeAuthor]):
     @classmethod
-    def connection(cls) -> PostgresConnection:
+    async def connection(cls) -> PostgresConnection:
         return in_memory_postgres_connection
 
     @classmethod
-    def redis(cls) -> aioredis.Redis:
+    async def redis(cls) -> aioredis.Redis:
         return in_memory_redis_connection
 
     @classmethod
@@ -143,11 +143,11 @@ class FakePost(ModelAbstract):
 
 class FakePostRepo(RepositoryAbstract[FakePost]):
     @classmethod
-    def connection(cls) -> PostgresConnection:
+    async def connection(cls) -> PostgresConnection:
         return in_memory_postgres_connection
 
     @classmethod
-    def redis(cls) -> aioredis.Redis:
+    async def redis(cls) -> aioredis.Redis:
         return in_memory_redis_connection
 
     @classmethod
@@ -213,11 +213,11 @@ class FakeTag(ModelAbstract):
 
 class FakeTagRepo(RepositoryAbstract[FakeTag]):
     @classmethod
-    def connection(cls) -> PostgresConnection:
+    async def connection(cls) -> PostgresConnection:
         return in_memory_postgres_connection
 
     @classmethod
-    def redis(cls) -> aioredis.Redis:
+    async def redis(cls) -> aioredis.Redis:
         return in_memory_redis_connection
 
     @classmethod
@@ -268,11 +268,11 @@ class FakeComment(ModelAbstract):
 
 class FakeCommentRepo(RepositoryAbstract[FakeComment]):
     @classmethod
-    def connection(cls) -> PostgresConnection:
+    async def connection(cls) -> PostgresConnection:
         return in_memory_postgres_connection
 
     @classmethod
-    def redis(cls) -> aioredis.Redis:
+    async def redis(cls) -> aioredis.Redis:
         return in_memory_redis_connection
 
     @classmethod
@@ -324,11 +324,11 @@ class FakePostToTag(ModelAbstract):
 
 class FakePostToTagRepo(RepositoryAbstract[FakePostToTag]):
     @classmethod
-    def connection(cls) -> PostgresConnection:
+    async def connection(cls) -> PostgresConnection:
         return in_memory_postgres_connection
 
     @classmethod
-    def redis(cls) -> aioredis.Redis:
+    async def redis(cls) -> aioredis.Redis:
         return in_memory_redis_connection
 
     @classmethod
@@ -369,11 +369,11 @@ class FakePostToComment(ModelAbstract):
 
 class FakePostToCommentRepo(RepositoryAbstract[FakePostToComment]):
     @classmethod
-    def connection(cls) -> PostgresConnection:
+    async def connection(cls) -> PostgresConnection:
         return in_memory_postgres_connection
 
     @classmethod
-    def redis(cls) -> aioredis.Redis:
+    async def redis(cls) -> aioredis.Redis:
         return in_memory_redis_connection
 
     @classmethod

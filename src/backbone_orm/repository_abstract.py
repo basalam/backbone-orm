@@ -18,18 +18,18 @@ from backbone_orm.relation_applier import RelationApplier
 class RepositoryAbstract(ABC, Generic[T]):
     @classmethod
     @abstractmethod
-    def connection(cls) -> PostgresConnection:
+    async def connection(cls) -> PostgresConnection:
         pass
 
     @classmethod
     @abstractmethod
-    def redis(cls) -> aioredis.Redis:
+    async def redis(cls) -> aioredis.Redis:
         pass
 
     @classmethod
-    def cache(cls) -> RedisCache:
+    async def cache(cls) -> RedisCache:
         return RedisCache(
-            connection=cls.redis(),
+            connection=await cls.redis(),
             prefix="BACKBONE_ORM.CACHE." + cls.table_name() + "."
         )
 
@@ -195,7 +195,7 @@ class RepositoryAbstract(ABC, Generic[T]):
             for model in non_cached_models
         }
 
-        await cls.cache().mset(new_caches, cache_time_in_seconds)
+        await (await cls.cache()).mset(new_caches, cache_time_in_seconds)
 
         return models
 
@@ -217,9 +217,9 @@ class RepositoryAbstract(ABC, Generic[T]):
 
         query_str = query if type(query) is str else query.get_sql()
         if return_:
-            return await cls.connection().execute_and_fetch(query_str, params.values())
+            return await (await cls.connection()).execute_and_fetch(query_str, params.values())
         else:
-            return await cls.connection().execute(query_str, params.values())
+            return await (await cls.connection()).execute(query_str, params.values())
 
     @classmethod
     async def execute_and_fetch(
