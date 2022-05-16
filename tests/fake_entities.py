@@ -50,7 +50,7 @@ def add_dot(x):
 class FakeAuthorRepo(RepositoryAbstract[FakeAuthor]):
     @classmethod
     async def connection(cls) -> PostgresConnection:
-        return in_memory_postgres_connection
+        return await in_memory_postgres_connection()
 
     @classmethod
     async def redis(cls) -> aioredis.Redis:
@@ -144,7 +144,7 @@ class FakePost(ModelAbstract):
 class FakePostRepo(RepositoryAbstract[FakePost]):
     @classmethod
     async def connection(cls) -> PostgresConnection:
-        return in_memory_postgres_connection
+        return await in_memory_postgres_connection()
 
     @classmethod
     async def redis(cls) -> aioredis.Redis:
@@ -214,7 +214,7 @@ class FakeTag(ModelAbstract):
 class FakeTagRepo(RepositoryAbstract[FakeTag]):
     @classmethod
     async def connection(cls) -> PostgresConnection:
-        return in_memory_postgres_connection
+        return await in_memory_postgres_connection()
 
     @classmethod
     async def redis(cls) -> aioredis.Redis:
@@ -269,7 +269,7 @@ class FakeComment(ModelAbstract):
 class FakeCommentRepo(RepositoryAbstract[FakeComment]):
     @classmethod
     async def connection(cls) -> PostgresConnection:
-        return in_memory_postgres_connection
+        return await in_memory_postgres_connection()
 
     @classmethod
     async def redis(cls) -> aioredis.Redis:
@@ -325,7 +325,7 @@ class FakePostToTag(ModelAbstract):
 class FakePostToTagRepo(RepositoryAbstract[FakePostToTag]):
     @classmethod
     async def connection(cls) -> PostgresConnection:
-        return in_memory_postgres_connection
+        return await in_memory_postgres_connection()
 
     @classmethod
     async def redis(cls) -> aioredis.Redis:
@@ -370,7 +370,7 @@ class FakePostToComment(ModelAbstract):
 class FakePostToCommentRepo(RepositoryAbstract[FakePostToComment]):
     @classmethod
     async def connection(cls) -> PostgresConnection:
-        return in_memory_postgres_connection
+        return await in_memory_postgres_connection()
 
     @classmethod
     async def redis(cls) -> aioredis.Redis:
@@ -403,7 +403,7 @@ class FakePostToCommentRepo(RepositoryAbstract[FakePostToComment]):
 
 class MigrateFakeEntities(MigrationAbstract):
     async def setup(self):
-        await in_memory_postgres_connection.execute(
+        await (await in_memory_postgres_connection()).execute(
             Query.create_table("fake_authors")
             .columns(
                 Column("id", "SERIAL", nullable=False),
@@ -414,7 +414,7 @@ class MigrateFakeEntities(MigrationAbstract):
             .get_sql()
         )
 
-        await in_memory_postgres_connection.execute(
+        await (await in_memory_postgres_connection()).execute(
             Query.create_table("fake_posts")
             .columns(
                 Column("id", "SERIAL", nullable=False),
@@ -426,7 +426,7 @@ class MigrateFakeEntities(MigrationAbstract):
             .get_sql()
         )
 
-        await in_memory_postgres_connection.execute(
+        await (await in_memory_postgres_connection()).execute(
             Query.create_table("fake_tags")
             .columns(
                 Column("id", "SERIAL", nullable=False), Column("title", "VARCHAR(100)")
@@ -435,7 +435,7 @@ class MigrateFakeEntities(MigrationAbstract):
             .get_sql()
         )
 
-        await in_memory_postgres_connection.execute(
+        await (await in_memory_postgres_connection()).execute(
             Query.create_table("fake_comments")
             .columns(
                 Column("id", "SERIAL", nullable=False),
@@ -445,28 +445,28 @@ class MigrateFakeEntities(MigrationAbstract):
             .get_sql()
         )
 
-        await in_memory_postgres_connection.execute(
+        await (await in_memory_postgres_connection()).execute(
             Query.create_table("fake_posts_to_fake_tags")
             .columns(Column("tag_id", "INT"), Column("post_id", "INT"))
             .get_sql()
         )
 
-        await in_memory_postgres_connection.execute(
+        await (await in_memory_postgres_connection()).execute(
             Query.create_table("fake_posts_to_fake_comments")
             .columns(Column("comment_id", "INT"), Column("post_id", "INT"))
             .get_sql()
         )
 
     async def teardown(self):
-        in_memory_postgres_connection.allow_wildcard_queries()
-        await in_memory_postgres_connection.execute("DROP TABLE fake_authors")
-        await in_memory_postgres_connection.execute("DROP TABLE fake_posts")
-        await in_memory_postgres_connection.execute("DROP TABLE fake_tags")
-        await in_memory_postgres_connection.execute("DROP TABLE fake_comments")
-        await in_memory_postgres_connection.execute(
+        (await in_memory_postgres_connection()).allow_wildcard_queries()
+        await (await in_memory_postgres_connection()).execute("DROP TABLE fake_authors")
+        await (await in_memory_postgres_connection()).execute("DROP TABLE fake_posts")
+        await (await in_memory_postgres_connection()).execute("DROP TABLE fake_tags")
+        await (await in_memory_postgres_connection()).execute("DROP TABLE fake_comments")
+        await (await in_memory_postgres_connection()).execute(
             "DROP TABLE fake_posts_to_fake_tags"
         )
-        await in_memory_postgres_connection.execute(
+        await (await in_memory_postgres_connection()).execute(
             "DROP TABLE fake_posts_to_fake_comments"
         )
-        in_memory_postgres_connection.deny_wildcard_queries()
+        (await in_memory_postgres_connection()).deny_wildcard_queries()
