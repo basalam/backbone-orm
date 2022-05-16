@@ -177,7 +177,7 @@ class RepositoryAbstract(ABC, Generic[T]):
         cache_key_fn = (
             lambda model: f"relations::{cls.table_name()}::{model.__getattribute__(cls.identifier())}::{'__'.join(relations)}"
         )
-        caches = await cls.cache().mget([cache_key_fn(model) for model in models])
+        caches = await (await cls.cache()).mget([cache_key_fn(model) for model in models])
         for index, model in enumerate(models):
             cached: Optional[Dict] = caches[index]
             if cached is not None:
