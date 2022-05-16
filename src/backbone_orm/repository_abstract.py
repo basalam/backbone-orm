@@ -177,7 +177,9 @@ class RepositoryAbstract(ABC, Generic[T]):
         cache_key_fn = (
             lambda model: f"relations::{cls.table_name()}::{model.__getattribute__(cls.identifier())}::{'__'.join(relations)}"
         )
-        caches = await (await cls.cache()).mget([cache_key_fn(model) for model in models])
+        caches = await (await cls.cache()).mget(
+            [cache_key_fn(model) for model in models]
+        )
         for index, model in enumerate(models):
             cached: Optional[Dict] = caches[index]
             if cached is not None:
@@ -220,7 +222,9 @@ class RepositoryAbstract(ABC, Generic[T]):
 
         query_str = query if type(query) is str else query.get_sql()
         if return_:
-            return await (await cls.connection()).execute_and_fetch(query_str, params.values())
+            return await (await cls.connection()).execute_and_fetch(
+                query_str, params.values()
+            )
         else:
             return await (await cls.connection()).execute(query_str, params.values())
 
@@ -608,11 +612,14 @@ class RepositoryAbstract(ABC, Generic[T]):
     @classmethod
     async def sum(
         cls, query: QueryBuilder, column: Field, params: Optional[Parameters] = None
-    ) -> Union[float, int, None]:
+    ) -> Union[float, int]:
         query = query.select(functions.Sum(column).as_("_aggregate_"))
 
         results = await cls.execute_and_fetch(query, params=params)
-        return results[0]["_aggregate_"] if len(results) > 0 else 0
+
+        if len(results) == 0: return 0
+        if results[0]["_aggregate_"] is None: return 0
+        return results[0]["_aggregate_"]
 
     @classmethod
     def belongs_to(
