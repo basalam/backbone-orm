@@ -158,7 +158,7 @@ class PostgresConnection:
     async def execute_and_fetch(self, query: str, params=None):
         return await self.execute(query, params, fetch=True)
 
-    async def begin_transaction(self, isolation: Any = "serializable"):
+    async def begin_transaction(self, isolation: Optional[str] = None):
 
         if not self.__transactions_enabled:
             return
