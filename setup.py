@@ -1,7 +1,7 @@
 import setuptools
 setuptools.setup(
     name="backbone-orm",
-    version="0.0.2",
+    version="0.0.3",
     author="Mojtabaa Habibain",
     author_email="mojtabaa.hn@gmail.com",
     description="Python Utilities & Basalam Micro-Services SDK",
