@@ -1,4 +1,5 @@
 import datetime
+import pickle
 from abc import ABC, abstractmethod
 from typing import Dict, List, Type, Union, Generic, Optional, Any, Callable, Iterable
 
@@ -30,7 +31,9 @@ class RepositoryAbstract(ABC, Generic[T]):
     async def cache(cls) -> RedisCache:
         return RedisCache(
             connection=await cls.redis(),
-            prefix="BACKBONE_ORM.CACHE." + cls.table_name() + "."
+            prefix="BACKBONE_ORM.CACHE." + cls.table_name() + ".",
+            serializer=pickle.dumps,
+            deserializer=pickle.loads,
         )
 
     @classmethod
