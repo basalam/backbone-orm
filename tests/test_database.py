@@ -37,9 +37,9 @@ class TestDatabase:
 
         assert len(await FakeAuthorRepo.all()) == 1
 
-        in_memory_postgres_connection.allow_wildcard_queries()
+        (await in_memory_postgres_connection()).allow_wildcard_queries()
         await FakeAuthorRepo.execute(FakeAuthorRepo.delete_query())
-        in_memory_postgres_connection.deny_wildcard_queries()
+        (await in_memory_postgres_connection()).deny_wildcard_queries()
 
         assert len(await FakeAuthorRepo.all()) == 0
 
@@ -237,30 +237,30 @@ class TestDatabase:
 
     async def test_transaction_rollback(self):
         prev_total = await FakeAuthorRepo.count(FakeAuthorRepo.select_query())
-        await in_memory_postgres_connection.begin_transaction()
+        await (await in_memory_postgres_connection()).begin_transaction()
         await FakeAuthorRepo.create(attributes=dict(name='Akber'))
         await FakeAuthorRepo.create(attributes=dict(name='Asgher'))
-        await in_memory_postgres_connection.rollback_transaction()
+        await (await in_memory_postgres_connection()).rollback_transaction()
         new_total = await FakeAuthorRepo.count(FakeAuthorRepo.select_query())
         assert prev_total == new_total
 
     async def test_transaction_commit(self):
         prev_total = await FakeAuthorRepo.count(FakeAuthorRepo.select_query())
-        await in_memory_postgres_connection.begin_transaction()
+        await (await in_memory_postgres_connection()).begin_transaction()
         await FakeAuthorRepo.create(attributes=dict(name='Akber'))
         await FakeAuthorRepo.create(attributes=dict(name='Asgher'))
-        await in_memory_postgres_connection.commit_transaction()
+        await (await in_memory_postgres_connection()).commit_transaction()
         new_total = await FakeAuthorRepo.count(FakeAuthorRepo.select_query())
         assert prev_total + 2 == new_total
 
     async def test_nested_transaction(self):
-        await in_memory_postgres_connection.begin_transaction()
-        await in_memory_postgres_connection.begin_transaction()
+        await (await in_memory_postgres_connection()).begin_transaction()
+        await (await in_memory_postgres_connection()).begin_transaction()
 
         await FakeAuthorRepo.create(attributes=dict(name='Akber'))
 
-        await in_memory_postgres_connection.commit_transaction()
-        assert in_memory_postgres_connection.is_in_transaction is True
+        await (await in_memory_postgres_connection()).commit_transaction()
+        assert (await in_memory_postgres_connection()).is_in_transaction is True
 
-        await in_memory_postgres_connection.commit_transaction()
-        assert in_memory_postgres_connection.is_in_transaction is False
+        await (await in_memory_postgres_connection()).commit_transaction()
+        assert (await in_memory_postgres_connection()).is_in_transaction is False
