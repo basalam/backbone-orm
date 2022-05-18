@@ -22,11 +22,8 @@ class QueryException(Exception):
 class QueryProfile(BaseModel):
     execution_time: int
     query: str
-    bindings: Union[List, Tuple] = []
-    trace = List[str]
-
-    class Config:
-        arbitrary_types_allowed = True
+    params: Union[List, Tuple] = []
+    trace : List[str] = []
 
 
 class PostgresConnection:
@@ -90,21 +87,7 @@ class PostgresConnection:
 
         if self.__debug_enabled:
             trace_back: List[traceback.FrameSummary] = traceback.extract_stack()
-            base_path = os.path.dirname(os.path.abspath(__file__ + "/../../..")) + "/."
-            traces = [
-                f"{trace.filename.replace(base_path, '')}:{trace.lineno}"
-                for trace in trace_back
-            ]
-            traces = [
-                trace
-                for trace in traces
-                if not any(
-                    [
-                        "postgres.py" in trace,
-                        "infrastructure/database" in trace,
-                    ]
-                )
-            ]
+            traces = [f"{trace.filename}:{trace.lineno}" for trace in trace_back]
             self.__history.append(
                 QueryProfile(
                     execution_time=execution_time,
