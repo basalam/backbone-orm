@@ -20,7 +20,7 @@ class QueryException(Exception):
 
 
 class QueryProfile(BaseModel):
-    execution_time: int
+    execution_time: float
     query: str
     params: Union[List, Tuple] = []
     trace : List[str] = []
