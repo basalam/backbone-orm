@@ -27,7 +27,7 @@ class ModelAbstract(BaseModel, abc.ABC):
         hidden_fields = set(
             attribute_name
             for attribute_name, model_field in self.__fields__.items()
-            if model_field.name[0:2] != "x_"
+            if model_field.name[0:2] == "x_"
         )
         kwargs.setdefault("exclude", hidden_fields)
         return super().dict(**kwargs)
