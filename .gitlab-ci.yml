@@ -1,11 +1,7 @@
-image: docker.basalam.dev/python:3.6-slim
+image: docker.basalam.dev/python:3.6
 
 stages:
   - deploy
-
-before_script:
-  - pip install twine
-  - python setup.py sdist
 
 deploy_production:
   stage: deploy
@@ -13,6 +9,8 @@ deploy_production:
     TWINE_USERNAME: $PYPI_USERNAME
     TWINE_PASSWORD: $PYPI_PASSWORD
   script:
+    - pip install twine
+    - python setup.py sdist
     - twine upload --repository-url $PYPI_REPOSITORY_URL dist/* --verbose
   only:
     - tags
