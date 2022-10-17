@@ -103,7 +103,7 @@ class RepositoryAbstract(ABC, Generic[T]):
 
     @classmethod
     def expand_relations(
-        cls, models: Union[T, List[T]], relations: List[str]
+            cls, models: Union[T, List[T]], relations: List[str]
     ) -> List[str]:
         first_model = models[0] if isinstance(models, list) else models
         new_relations = []
@@ -123,7 +123,7 @@ class RepositoryAbstract(ABC, Generic[T]):
 
     @classmethod
     async def reapply_relations(
-        cls, models: Union[T, List[T]], relations: List[str]
+            cls, models: Union[T, List[T]], relations: List[str]
     ) -> Union[T, List[T]]:
         for relation in cls.expand_relations(models, relations):
             await cls.reapply_relation(models, relation)
@@ -132,7 +132,7 @@ class RepositoryAbstract(ABC, Generic[T]):
 
     @classmethod
     def forget_relations(
-        cls, models: Union[T, List[T]], relations: List[str]
+            cls, models: Union[T, List[T]], relations: List[str]
     ) -> Union[T, List[T]]:
         for relation in cls.expand_relations(models, relations):
             cls.forget_relation(models, relation)
@@ -141,7 +141,7 @@ class RepositoryAbstract(ABC, Generic[T]):
 
     @classmethod
     async def reapply_relation(
-        cls, models: Union[T, List[T]], relation: str
+            cls, models: Union[T, List[T]], relation: str
     ) -> Union[T, List[T]]:
         cls.forget_relation(models, relation)
         return await cls.apply_relation(models, relation)
@@ -161,7 +161,7 @@ class RepositoryAbstract(ABC, Generic[T]):
 
     @classmethod
     async def apply_relations(
-        cls, models: Union[T, List[T]], relations: Iterable[str]
+            cls, models: Union[T, List[T]], relations: Iterable[str]
     ) -> Union[T, List[T]]:
         for relation in relations:
             models = await cls.apply_relation(models, relation)
@@ -170,7 +170,7 @@ class RepositoryAbstract(ABC, Generic[T]):
 
     @classmethod
     async def apply_cached_relations(
-        cls, models: List[T], relations: List[str], cache_time_in_seconds: int
+            cls, models: List[T], relations: List[str], cache_time_in_seconds: int
     ) -> Union[T, List[T]]:
         non_cached_models = []
 
@@ -206,16 +206,16 @@ class RepositoryAbstract(ABC, Generic[T]):
 
     @classmethod
     async def apply_relation(
-        cls, models: Union[T, List[T]], relation: str
+            cls, models: Union[T, List[T]], relation: str
     ) -> Union[T, List[T]]:
         return await RelationApplier(cls, models, relation).apply()
 
     @classmethod
     async def execute(
-        cls,
-        query: Union[QueryBuilder, str],
-        params: Optional[Parameters] = None,
-        return_: bool = False,
+            cls,
+            query: Union[QueryBuilder, str],
+            params: Optional[Parameters] = None,
+            return_: bool = False,
     ):
         if params is None:
             params = Parameters()
@@ -230,7 +230,7 @@ class RepositoryAbstract(ABC, Generic[T]):
 
     @classmethod
     async def execute_and_fetch(
-        cls, query: Union[QueryBuilder, str], params: Optional[Parameters] = None
+            cls, query: Union[QueryBuilder, str], params: Optional[Parameters] = None
     ):
         return await cls.execute(query, params, return_=True)
 
@@ -275,22 +275,22 @@ class RepositoryAbstract(ABC, Generic[T]):
 
     @classmethod
     async def create(
-        cls, attributes: Dict, return_: bool = False, **kwargs
+            cls, attributes: Dict, return_: bool = False, **kwargs
     ) -> Optional[T]:
         attributes = cls.apply_mutators(attributes)
         attributes = {**attributes, **kwargs}
 
         if (
-            cls.created_at_field() is not None
-            and cls.created_at_field() not in attributes.keys()
+                cls.created_at_field() is not None
+                and cls.created_at_field() not in attributes.keys()
         ):
             attributes[cls.created_at_field()] = datetime.datetime.now().replace(
                 microsecond=0
             )
 
         if (
-            cls.updated_at_field() is not None
-            and cls.updated_at_field() not in attributes.keys()
+                cls.updated_at_field() is not None
+                and cls.updated_at_field() not in attributes.keys()
         ):
             attributes[cls.updated_at_field()] = datetime.datetime.now().replace(
                 microsecond=0
@@ -313,7 +313,7 @@ class RepositoryAbstract(ABC, Generic[T]):
 
     @classmethod
     async def create_many(
-        cls, attributes: List[Dict], return_: bool = False
+            cls, attributes: List[Dict], return_: bool = False
     ) -> Optional[List[T]]:
         if len(attributes) == 0:
             return []
@@ -351,7 +351,7 @@ class RepositoryAbstract(ABC, Generic[T]):
             return await cls.execute(query, params)
 
     @classmethod
-    async def update_return(cls, query: QueryBuilder, attributes: Dict) -> T:
+    async def update_return(cls, query: QueryBuilder, attributes: Dict) -> Union[T, List[T]]:
         return await cls.update(query, attributes, True)
 
     @classmethod
@@ -372,11 +372,11 @@ class RepositoryAbstract(ABC, Generic[T]):
 
     @classmethod
     async def update(
-        cls,
-        query: QueryBuilder,
-        attributes: Dict,
-        return_: bool = False,
-        params: Optional[Parameters] = None,
+            cls,
+            query: QueryBuilder,
+            attributes: Dict,
+            return_: bool = False,
+            params: Optional[Parameters] = None,
     ) -> Optional[Union[T, List[T]]]:
 
         cls.apply_mutators(attributes)
@@ -386,8 +386,8 @@ class RepositoryAbstract(ABC, Generic[T]):
             query = query.set(key, params.make(value))
 
         if (
-            cls.updated_at_field() is not None
-            and cls.updated_at_field() not in attributes.keys()
+                cls.updated_at_field() is not None
+                and cls.updated_at_field() not in attributes.keys()
         ):
             query = query.set(
                 cls.updated_at_field(),
@@ -413,7 +413,7 @@ class RepositoryAbstract(ABC, Generic[T]):
 
     @classmethod
     async def update_by_id(
-        cls, identifier: any, attributes: Dict, return_: bool = False
+            cls, identifier: any, attributes: Dict, return_: bool = False
     ) -> Optional[T]:
         if len(attributes.values()) == 0:
             if return_:
@@ -439,7 +439,7 @@ class RepositoryAbstract(ABC, Generic[T]):
 
         for column in columns:
             if hasattr(model, column) and model.__getattribute__(
-                column
+                    column
             ) != model.x_original.get(column):
                 attributes[column] = model.__getattribute__(column)
                 model.x_original[column] = model.__getattribute__(column)
@@ -498,10 +498,10 @@ class RepositoryAbstract(ABC, Generic[T]):
 
     @classmethod
     async def get(
-        cls,
-        query: QueryBuilder,
-        params: Optional[Parameters] = None,
-        relations: Optional[List] = None,
+            cls,
+            query: QueryBuilder,
+            params: Optional[Parameters] = None,
+            relations: Optional[List] = None,
     ) -> List[T]:
         if params is None:
             params = Parameters()
@@ -519,10 +519,10 @@ class RepositoryAbstract(ABC, Generic[T]):
 
     @classmethod
     async def first(
-        cls,
-        query: QueryBuilder,
-        params: Optional[Parameters] = None,
-        relations: Optional[List] = None,
+            cls,
+            query: QueryBuilder,
+            params: Optional[Parameters] = None,
+            relations: Optional[List] = None,
     ) -> Union[T, None]:
         if params is None:
             params = Parameters()
@@ -531,7 +531,7 @@ class RepositoryAbstract(ABC, Generic[T]):
 
     @classmethod
     async def find_by_id(
-        cls, identifier: any, relations: Optional[List] = None
+            cls, identifier: any, relations: Optional[List] = None
     ) -> Union[T, None]:
 
         if identifier is None:
@@ -540,8 +540,8 @@ class RepositoryAbstract(ABC, Generic[T]):
         params = Parameters()
         return await cls.first(
             cls.select_query()
-            .where(Field(cls.identifier()).eq(params.make(identifier)))
-            .select("*"),
+                .where(Field(cls.identifier()).eq(params.make(identifier)))
+                .select("*"),
             params=params,
             relations=relations,
         )
@@ -566,11 +566,11 @@ class RepositoryAbstract(ABC, Generic[T]):
 
     @classmethod
     async def count(
-        cls,
-        query: QueryBuilder,
-        params: Optional[Parameters] = None,
-        column: Any = "*",
-        dump: bool = False,
+            cls,
+            query: QueryBuilder,
+            params: Optional[Parameters] = None,
+            column: Any = "*",
+            dump: bool = False,
     ) -> Union[float, int]:
         if column != "*":
             query = query.select(functions.Count(column).distinct().as_("_aggregate_"))
@@ -584,7 +584,7 @@ class RepositoryAbstract(ABC, Generic[T]):
 
     @classmethod
     async def max(
-        cls, query: QueryBuilder, column: str, params: Optional[Parameters] = None
+            cls, query: QueryBuilder, column: str, params: Optional[Parameters] = None
     ) -> Union[float, int, None]:
         query = query.select(functions.Max(column).as_("_aggregate_"))
 
@@ -593,7 +593,7 @@ class RepositoryAbstract(ABC, Generic[T]):
 
     @classmethod
     async def min(
-        cls, query: QueryBuilder, column: str, params: Optional[Parameters] = None
+            cls, query: QueryBuilder, column: str, params: Optional[Parameters] = None
     ) -> Union[float, int, None]:
         query = query.select(functions.Min(column).as_("_aggregate_"))
 
@@ -602,7 +602,7 @@ class RepositoryAbstract(ABC, Generic[T]):
 
     @classmethod
     async def avg(
-        cls, query: QueryBuilder, column: str, params: Optional[Parameters] = None
+            cls, query: QueryBuilder, column: str, params: Optional[Parameters] = None
     ) -> Union[float, int, None]:
         query = query.select(functions.Avg(column).as_("_aggregate_"))
 
@@ -611,7 +611,7 @@ class RepositoryAbstract(ABC, Generic[T]):
 
     @classmethod
     async def sum(
-        cls, query: QueryBuilder, column: Field, params: Optional[Parameters] = None
+            cls, query: QueryBuilder, column: Field, params: Optional[Parameters] = None
     ) -> Union[float, int]:
         query = query.select(functions.Sum(column).as_("_aggregate_"))
 
@@ -623,12 +623,12 @@ class RepositoryAbstract(ABC, Generic[T]):
 
     @classmethod
     def belongs_to(
-        cls,
-        repo: Type["RepositoryAbstract"],
-        foreign_key: Optional[str] = None,
-        local_key: Optional[str] = None,
-        with_trashed: bool = False,
-        cache_time_in_seconds=0,
+            cls,
+            repo: Type["RepositoryAbstract"],
+            foreign_key: Optional[str] = None,
+            local_key: Optional[str] = None,
+            with_trashed: bool = False,
+            cache_time_in_seconds=0,
     ):
         return BelongsTo(
             cls, repo, foreign_key, local_key, with_trashed, cache_time_in_seconds
@@ -636,12 +636,12 @@ class RepositoryAbstract(ABC, Generic[T]):
 
     @classmethod
     def has_one(
-        cls,
-        repo: Type["RepositoryAbstract"],
-        foreign_key: Optional[str] = None,
-        local_key: Optional[str] = None,
-        with_trashed: bool = False,
-        cache_time_in_seconds=0,
+            cls,
+            repo: Type["RepositoryAbstract"],
+            foreign_key: Optional[str] = None,
+            local_key: Optional[str] = None,
+            with_trashed: bool = False,
+            cache_time_in_seconds=0,
     ):
         return HasOne(
             cls, repo, foreign_key, local_key, with_trashed, cache_time_in_seconds
@@ -649,25 +649,25 @@ class RepositoryAbstract(ABC, Generic[T]):
 
     @classmethod
     def has_many(
-        cls,
-        repo: Type["RepositoryAbstract"],
-        foreign_key: Optional[str] = None,
-        local_key: Optional[str] = None,
-        with_trashed: bool = False,
+            cls,
+            repo: Type["RepositoryAbstract"],
+            foreign_key: Optional[str] = None,
+            local_key: Optional[str] = None,
+            with_trashed: bool = False,
     ):
         return HasMany(cls, repo, foreign_key, local_key, with_trashed)
 
     @classmethod
     def belongs_to_many(
-        cls,
-        repo: Type["RepositoryAbstract"],
-        pivot_table: str,
-        local_key: Optional[str] = None,
-        pivot_local_key: Optional[str] = None,
-        relation_key: Optional[str] = None,
-        pivot_relation_key: Optional[str] = None,
-        with_trashed: bool = False,
-        cache_time_in_seconds: int = 0,
+            cls,
+            repo: Type["RepositoryAbstract"],
+            pivot_table: str,
+            local_key: Optional[str] = None,
+            pivot_local_key: Optional[str] = None,
+            relation_key: Optional[str] = None,
+            pivot_relation_key: Optional[str] = None,
+            with_trashed: bool = False,
+            cache_time_in_seconds: int = 0,
     ):
         return BelongsToMany(
             cls,
@@ -730,7 +730,7 @@ class RepositoryAbstract(ABC, Generic[T]):
 
     @classmethod
     async def random(
-        cls, k=1, relations: Optional[List] = None, **kwargs
+            cls, k=1, relations: Optional[List] = None, **kwargs
     ) -> Optional[Union[T, List[T]]]:
         query = cls.select_query()
         query = query.limit(k)
