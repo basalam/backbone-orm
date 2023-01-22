@@ -82,3 +82,4 @@ python -m pytest
 
 #### Changelog
 - 0.0.11 Now build and push are done using gitlab-ci
+- 0.0.12 custom order enums
