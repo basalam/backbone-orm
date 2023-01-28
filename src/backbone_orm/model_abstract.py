@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import abc
-from typing import Optional, Dict, Sequence, Tuple, Any, TypeVar, TYPE_CHECKING, Set
+from typing import Optional, Dict, Sequence, Tuple, Any, TypeVar, TYPE_CHECKING, Set, List
 
 import inflect
 from pydantic import BaseModel
@@ -85,6 +85,9 @@ class ModelAbstract(BaseModel, abc.ABC):
 
     def has_relation(self, name: str):
         return name in self.x_relations.keys()
+
+    def has_relations(self, names: List[str]):
+        return all(name in self.x_relations.keys() for name in names)
 
 
 T = TypeVar("T", bound=ModelAbstract)
