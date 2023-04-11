@@ -60,7 +60,7 @@ class TestDriver(DriverAbstract):
         self.__server = self.__server or testing.postgresql.Postgresql()
         return self.__server
 
-    async def acquire(self) -> PostgresConnection:
+    async def acquire(self, *args, **kwargs) -> PostgresConnection:
         self.__connection = self.__connection or PostgresConnection(
             await asyncpg.connect(
                 host=self.__config.test_host,
@@ -73,7 +73,7 @@ class TestDriver(DriverAbstract):
         )
         return self.__connection
 
-    async def release(self) -> None:
+    async def release(self, *args, **kwargs) -> None:
         if self.__connection is not None: await self.__connection.close()
         if self.__server is not None: self.__server.stop()
 
@@ -87,13 +87,13 @@ class PoolDriver(DriverAbstract):
         self.__pool: Optional[asyncpg.Pool] = None
         self.__acquires: Dict[str, Tuple[PostgresConnection, PoolAcquireContext]] = {}
 
-    async def acquire(self, key: Any) -> PostgresConnection:
+    async def acquire(self, key: Any, *args, **kwargs) -> PostgresConnection:
         if key not in self.__acquires:
             connection = await (await self.pool()).acquire(timeout=self.__config.pool_acquire_timeout)
             self.__acquires[key] = (PostgresConnection(connection=connection), connection)
         return self.__acquires[key][0]
 
-    async def release(self, key: Any) -> None:
+    async def release(self, key: Any, *args, **kwargs) -> None:
         if key in self.__acquires:
             await (await self.pool()).release(self.__acquires[key][1])
             del self.__acquires[key]
