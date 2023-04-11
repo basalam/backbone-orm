@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import List, Type, Callable, Dict, Optional
 
-from backbone_orm import RepositoryAbstract, Parameters
+from .repository_abstract import RepositoryAbstract, Parameters
 from pydantic import BaseModel
 from pypika.queries import QueryBuilder
 
