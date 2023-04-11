@@ -2,17 +2,19 @@ import json
 from typing import Type, List, Optional, Dict, Any
 
 import aioredis
-from pypika import Field, Query, Column
+from pypika import Field, Query, Column, Table
 
 from backbone_orm.migration_abstract import MigrationAbstract
 from backbone_orm.model_abstract import ModelAbstract, T
 from backbone_orm.model_schema_abstract import ModelSchemaAbstract
 from backbone_orm.postgres_connection import PostgresConnection
+from backbone_orm.query_builder_abstract import BaseQueryBuilder
 from backbone_orm.repository_abstract import RepositoryAbstract
-from tests.connections import in_memory_redis_connection, in_memory_postgres_connection
+from .connections import in_memory_redis_connection, postgres
 
 
 class FakeAuthor(ModelAbstract):
+
     def repository(self) -> Any:
         return FakeAuthorRepo
 
@@ -47,10 +49,15 @@ def add_dot(x):
     return x + "."
 
 
-class FakeAuthorRepo(RepositoryAbstract[FakeAuthor]):
+class FakeAuthorRepo(RepositoryAbstract[FakeAuthor, BaseQueryBuilder]):
+
+    @classmethod
+    def schema_name(cls) -> str:
+        return 'public'
+
     @classmethod
     async def connection(cls) -> PostgresConnection:
-        return await in_memory_postgres_connection()
+        return await postgres.acquire()
 
     @classmethod
     async def redis(cls) -> aioredis.Redis:
@@ -59,7 +66,7 @@ class FakeAuthorRepo(RepositoryAbstract[FakeAuthor]):
     @classmethod
     def accessors(cls):
         return {
-            FakeAuthorSchema.NAME: [add_jr, add_dot],
+            FakeAuthorSchema.NAME    : [add_jr, add_dot],
             FakeAuthorSchema.METADATA: lambda property_: json.loads(property_)
             if property_ is not None
             else None,
@@ -120,6 +127,7 @@ class FakeAuthorRepo(RepositoryAbstract[FakeAuthor]):
 
 
 class FakePost(ModelAbstract):
+
     def repository(self) -> Any:
         return FakePostRepo
 
@@ -141,10 +149,15 @@ class FakePost(ModelAbstract):
         return self.relation("comments")
 
 
-class FakePostRepo(RepositoryAbstract[FakePost]):
+class FakePostRepo(RepositoryAbstract[FakePost, BaseQueryBuilder]):
+
+    @classmethod
+    def schema_name(cls) -> str:
+        return 'public'
+
     @classmethod
     async def connection(cls) -> PostgresConnection:
-        return await in_memory_postgres_connection()
+        return await postgres.acquire()
 
     @classmethod
     async def redis(cls) -> aioredis.Redis:
@@ -200,6 +213,7 @@ class FakePostRepo(RepositoryAbstract[FakePost]):
 
 
 class FakeTag(ModelAbstract):
+
     def repository(self) -> Any:
         return FakeTagRepo
 
@@ -211,10 +225,15 @@ class FakeTag(ModelAbstract):
         return self.relation("posts")
 
 
-class FakeTagRepo(RepositoryAbstract[FakeTag]):
+class FakeTagRepo(RepositoryAbstract[FakeTag, BaseQueryBuilder]):
+
+    @classmethod
+    def schema_name(cls) -> str:
+        return 'public'
+
     @classmethod
     async def connection(cls) -> PostgresConnection:
-        return await in_memory_postgres_connection()
+        return await postgres.acquire()
 
     @classmethod
     async def redis(cls) -> aioredis.Redis:
@@ -255,6 +274,7 @@ class FakeTagRepo(RepositoryAbstract[FakeTag]):
 
 
 class FakeComment(ModelAbstract):
+
     def repository(self) -> Any:
         return FakeCommentRepo
 
@@ -266,10 +286,15 @@ class FakeComment(ModelAbstract):
         return self.relation("posts")
 
 
-class FakeCommentRepo(RepositoryAbstract[FakeComment]):
+class FakeCommentRepo(RepositoryAbstract[FakeComment, BaseQueryBuilder]):
+
+    @classmethod
+    def schema_name(cls) -> str:
+        return 'public'
+
     @classmethod
     async def connection(cls) -> PostgresConnection:
-        return await in_memory_postgres_connection()
+        return await postgres.acquire()
 
     @classmethod
     async def redis(cls) -> aioredis.Redis:
@@ -315,6 +340,7 @@ class FakeCommentRepo(RepositoryAbstract[FakeComment]):
 
 
 class FakePostToTag(ModelAbstract):
+
     def repository(self) -> Any:
         return FakePostToTagRepo
 
@@ -322,10 +348,15 @@ class FakePostToTag(ModelAbstract):
     tag_id: int
 
 
-class FakePostToTagRepo(RepositoryAbstract[FakePostToTag]):
+class FakePostToTagRepo(RepositoryAbstract[FakePostToTag, BaseQueryBuilder]):
+
+    @classmethod
+    def schema_name(cls) -> str:
+        return 'public'
+
     @classmethod
     async def connection(cls) -> PostgresConnection:
-        return await in_memory_postgres_connection()
+        return await postgres.acquire()
 
     @classmethod
     async def redis(cls) -> aioredis.Redis:
@@ -360,6 +391,7 @@ class FakePostToTagRepo(RepositoryAbstract[FakePostToTag]):
 
 
 class FakePostToComment(ModelAbstract):
+
     def repository(self) -> Any:
         return FakePostToCommentRepo
 
@@ -367,10 +399,15 @@ class FakePostToComment(ModelAbstract):
     comment_id: int
 
 
-class FakePostToCommentRepo(RepositoryAbstract[FakePostToComment]):
+class FakePostToCommentRepo(RepositoryAbstract[FakePostToComment, BaseQueryBuilder]):
+
+    @classmethod
+    def schema_name(cls) -> str:
+        return 'public'
+
     @classmethod
     async def connection(cls) -> PostgresConnection:
-        return await in_memory_postgres_connection()
+        return await postgres.acquire()
 
     @classmethod
     async def redis(cls) -> aioredis.Redis:
@@ -402,71 +439,72 @@ class FakePostToCommentRepo(RepositoryAbstract[FakePostToComment]):
 
 
 class MigrateFakeEntities(MigrationAbstract):
+
     async def setup(self):
-        await (await in_memory_postgres_connection()).execute(
-            Query.create_table("fake_authors")
-            .columns(
+        await (await postgres.acquire()).execute(
+            Query.create_table(Table("fake_authors",schema='public'))
+                .columns(
                 Column("id", "SERIAL", nullable=False),
                 Column("name", "VARCHAR(100)"),
                 Column("metadata", "jsonb", nullable=True),
             )
-            .primary_key("id")
-            .get_sql()
+                .primary_key("id")
+                .get_sql()
         )
 
-        await (await in_memory_postgres_connection()).execute(
-            Query.create_table("fake_posts")
-            .columns(
+        await (await postgres.acquire()).execute(
+            Query.create_table(Table("fake_posts",schema='public'))
+                .columns(
                 Column("id", "SERIAL", nullable=False),
                 Column("author_id", "INT"),
                 Column("is_active", "INT DEFAULT(1)"),
                 Column("title", "VARCHAR(100)"),
             )
-            .primary_key("id")
-            .get_sql()
+                .primary_key("id")
+                .get_sql()
         )
 
-        await (await in_memory_postgres_connection()).execute(
-            Query.create_table("fake_tags")
-            .columns(
+        await (await postgres.acquire()).execute(
+            Query.create_table(Table("fake_tags",schema='public'))
+                .columns(
                 Column("id", "SERIAL", nullable=False), Column("title", "VARCHAR(100)")
             )
-            .primary_key("id")
-            .get_sql()
+                .primary_key("id")
+                .get_sql()
         )
 
-        await (await in_memory_postgres_connection()).execute(
-            Query.create_table("fake_comments")
-            .columns(
+        await (await postgres.acquire()).execute(
+            Query.create_table(Table("fake_comments",schema='public'))
+                .columns(
                 Column("id", "SERIAL", nullable=False),
                 Column("comment", "VARCHAR(500)"),
             )
-            .primary_key("id")
-            .get_sql()
+                .primary_key("id")
+                .get_sql()
         )
 
-        await (await in_memory_postgres_connection()).execute(
-            Query.create_table("fake_posts_to_fake_tags")
-            .columns(Column("tag_id", "INT"), Column("post_id", "INT"))
-            .get_sql()
+        await (await postgres.acquire()).execute(
+            Query.create_table(Table("fake_posts_to_fake_tags",schema='public'))
+                .columns(Column("tag_id", "INT"), Column("post_id", "INT"))
+                .get_sql()
         )
 
-        await (await in_memory_postgres_connection()).execute(
-            Query.create_table("fake_posts_to_fake_comments")
-            .columns(Column("comment_id", "INT"), Column("post_id", "INT"))
-            .get_sql()
+        await (await postgres.acquire()).execute(
+            Query.create_table(Table("fake_posts_to_fake_comments",schema='public'))
+                .columns(Column("comment_id", "INT"), Column("post_id", "INT"))
+                .get_sql()
         )
 
     async def teardown(self):
-        (await in_memory_postgres_connection()).allow_wildcard_queries()
-        await (await in_memory_postgres_connection()).execute("DROP TABLE fake_authors")
-        await (await in_memory_postgres_connection()).execute("DROP TABLE fake_posts")
-        await (await in_memory_postgres_connection()).execute("DROP TABLE fake_tags")
-        await (await in_memory_postgres_connection()).execute("DROP TABLE fake_comments")
-        await (await in_memory_postgres_connection()).execute(
+        (await postgres.acquire()).allow_wildcard_queries()
+        await (await postgres.acquire()).execute("DROP TABLE fake_authors")
+        await (await postgres.acquire()).execute("DROP TABLE fake_posts")
+        await (await postgres.acquire()).execute("DROP TABLE fake_tags")
+        await (await postgres.acquire()).execute("DROP TABLE fake_comments")
+        await (await postgres.acquire()).execute(
             "DROP TABLE fake_posts_to_fake_tags"
         )
-        await (await in_memory_postgres_connection()).execute(
+        await (await postgres.acquire()).execute(
             "DROP TABLE fake_posts_to_fake_comments"
         )
-        (await in_memory_postgres_connection()).deny_wildcard_queries()
+        (await postgres.acquire()).deny_wildcard_queries()

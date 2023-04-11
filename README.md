@@ -13,7 +13,9 @@ pip install backbone-orm --extra-index-url https://repo.basalam.dev/artifactory/
 ```python
 from backbone_orm import (
     RepositoryAbstract,
-    PostgresConnection,
+    PostgresManager,
+    DriverEnum,
+ConnectionConfig,
     ModelAbstract,
     T,
     Parameters
@@ -21,17 +23,12 @@ from backbone_orm import (
 import aioredis
 import typing
 
-connection = PostgresConnection(
-    user="root",
-    password="root",
-    host="127.0.0.1",
-    port=1111,
-    database="postgre",
-    default_schema="postgre",
-    timeout_in_seconds=5,
+postgres = PostgresManager(
+    default=DriverEnum.POOL,
+    config=ConnectionConfig(...)
 )
 
-redis = aioredis.Redis(host="127.0.0.1", port=6379)
+redis = aioredis.Redis(...)
 
 
 class UserModel(ModelAbstract):
@@ -39,10 +36,11 @@ class UserModel(ModelAbstract):
     name: str
 
 
-class UserRepo(RepositoryAbstract):
+class UserRepo(RepositoryAbstract[UserModel]):
+
     @classmethod
-    def connection(cls) -> PostgresConnection:
-        return connection
+    async def connection(cls) -> PostgresConnection:
+        return await postgres.acquire()
 
     @classmethod
     def redis(cls) -> aioredis.Redis:
@@ -54,20 +52,18 @@ class UserRepo(RepositoryAbstract):
 
     @classmethod
     def model(cls) -> typing.Type[T]:
-        pass
+        return UserModel
 
     @classmethod
     def soft_deletes(cls) -> bool:
-        pass
+        return True
 
     @classmethod
     def default_relations(cls) -> typing.List[str]:
-        pass
+        return []
 
 
-params = Parameters()
-query = UserRepo.select_where(UserRepo.field("name") == params.make("Mojataba"))
-print(UserRepo.first(query, params))
+print(await UserRepo.find_by_id(1))
 ```
 
 #### Testing
@@ -81,7 +77,9 @@ python -m pytest
 ```
 
 #### Changelog
+
 - 0.0.11 Now build and push are done using gitlab-ci
-- 0.0.13 fix: return type of update_return 
+- 0.0.13 fix: return type of update_return
 - 0.0.14 custom order enums
 - 0.0.15 has_relations in ModelAbstract
+- 1.0.0 Adds QueryBuilder, Adds Connection Manager

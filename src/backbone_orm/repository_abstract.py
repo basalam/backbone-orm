@@ -4,19 +4,22 @@ from abc import ABC, abstractmethod
 from typing import Dict, List, Type, Union, Generic, Optional, Any, Callable, Iterable
 
 import aioredis
+import inflect
 from backbone_redis_cache import RedisCache
 from pypika import Table, Field, functions
 from pypika.queries import QueryBuilder
 
-from backbone_orm.model_abstract import T, inflect_engine
-from backbone_orm.model_schema_abstract import ModelSchemaAbstract
-from backbone_orm.parameters import Parameters
-from backbone_orm.postgres_connection import PostgresConnection
-from backbone_orm.relation import HasMany, BelongsTo, HasOne, BelongsToMany, Relation
-from backbone_orm.relation_applier import RelationApplier
+from .model_schema_abstract import ModelSchemaAbstract
+from .parameters import Parameters
+from .postgres_connection import PostgresConnection
+from .relation_applier import RelationApplier
+from .query_builder_abstract import QueryBuilderAbstract, V, BaseQueryBuilder
+from .model_abstract import T
+from .relation import Relation, BelongsTo, HasOne, HasMany, BelongsToMany
 
 
-class RepositoryAbstract(ABC, Generic[T]):
+class RepositoryAbstract(ABC, Generic[T, V]):
+
     @classmethod
     @abstractmethod
     async def connection(cls) -> PostgresConnection:
@@ -25,6 +28,15 @@ class RepositoryAbstract(ABC, Generic[T]):
     @classmethod
     @abstractmethod
     async def redis(cls) -> aioredis.Redis:
+        pass
+
+    @classmethod
+    def query_builder(cls) -> QueryBuilderAbstract:
+        return BaseQueryBuilder()
+
+    @classmethod
+    @abstractmethod
+    def schema_name(cls) -> str:
         pass
 
     @classmethod
@@ -86,7 +98,7 @@ class RepositoryAbstract(ABC, Generic[T]):
 
     @classmethod
     def foreign_key_identifier(cls):
-        return inflect_engine.singular_noun(cls.table_name()) + "_" + cls.identifier()
+        return inflect.engine().singular_noun(cls.table_name()) + "_" + cls.identifier()
 
     @classmethod
     def soft_delete_identifier(cls) -> str:
@@ -236,7 +248,7 @@ class RepositoryAbstract(ABC, Generic[T]):
 
     @classmethod
     def table(cls) -> Table:
-        return Table(cls.table_name())
+        return Table(cls.table_name(), schema=cls.schema_name())
 
     @classmethod
     def query(cls) -> Table:
@@ -247,13 +259,11 @@ class RepositoryAbstract(ABC, Generic[T]):
         return cls.query().field(name)
 
     @classmethod
-    def select_query(cls, with_thrashed: bool = False) -> QueryBuilder:
-        query = cls.query().select()
+    def select_query(cls, with_thrashed: bool = False) -> V:
+        query = cls.query_builder().from_repo(cls)
 
         if cls.soft_deletes() and with_thrashed is False:
-            query = query.where(
-                cls.query().field(cls.soft_delete_identifier()).isnull()
-            )
+            query = query.filter_with_trashed()
 
         return query
 
@@ -378,7 +388,6 @@ class RepositoryAbstract(ABC, Generic[T]):
             return_: bool = False,
             params: Optional[Parameters] = None,
     ) -> Optional[Union[T, List[T]]]:
-
         cls.apply_mutators(attributes)
         params = params if params is not None else Parameters()
 
@@ -533,7 +542,6 @@ class RepositoryAbstract(ABC, Generic[T]):
     async def find_by_id(
             cls, identifier: any, relations: Optional[List] = None
     ) -> Union[T, None]:
-
         if identifier is None:
             return None
 

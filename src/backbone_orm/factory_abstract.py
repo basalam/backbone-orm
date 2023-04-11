@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
 from typing import TypeVar, Generic, List, Type
 
-from backbone_orm.model_abstract import T
-from backbone_orm.repository_abstract import RepositoryAbstract
+from .model_abstract import T
+from .repository_abstract import RepositoryAbstract
 
 U = TypeVar("U", bound=RepositoryAbstract)
 

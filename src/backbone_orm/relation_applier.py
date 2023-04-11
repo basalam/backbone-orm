@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from typing import Union, List, Type, TYPE_CHECKING, Tuple
 
-from backbone_orm.model_abstract import T
-from backbone_orm.relation import Relation
+from .model_abstract import T
+from .relation import Relation
 
 if TYPE_CHECKING:
     from backbone_orm.repository_abstract import RepositoryAbstract
@@ -13,10 +13,10 @@ class RelationApplier:
     counter = 0
 
     def __init__(
-        self,
-        repository: Type["RepositoryAbstract"],
-        models: Union[T, List[T]],
-        relation: str,
+            self,
+            repository: Type["RepositoryAbstract"],
+            models: Union[T, List[T]],
+            relation: str,
     ) -> None:
         self.__relation = relation.replace("_relation", "")
         self.__is_list = type(models) is list
