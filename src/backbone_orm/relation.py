@@ -4,7 +4,7 @@ from typing import List, TYPE_CHECKING, Type, Optional, Callable, Any, Dict
 from pypika import Table, Field
 from pypika.queries import QueryBuilder
 
-from backbone_orm.parameters import Parameters
+from .parameters import Parameters
 
 if TYPE_CHECKING:
     from backbone_orm.model_abstract import ModelAbstract
@@ -12,6 +12,7 @@ if TYPE_CHECKING:
 
 
 class Relation(ABC):
+
     def __init__(self):
         self.relation_repo: Optional[RepositoryAbstract] = None
         self.query_callback: Optional[
@@ -40,7 +41,7 @@ class Relation(ABC):
             return value
 
     def callback(
-        self, callback: Optional[Callable[[QueryBuilder], QueryBuilder]]
+            self, callback: Optional[Callable[[QueryBuilder], QueryBuilder]]
     ) -> "Relation":
         self.query_callback = callback
         return self
@@ -62,7 +63,7 @@ class Relation(ABC):
 
     @abstractmethod
     async def apply_many(
-        self, key: str, models: List["ModelAbstract"]
+            self, key: str, models: List["ModelAbstract"]
     ) -> List["ModelAbstract"]:
         pass
 
@@ -72,14 +73,15 @@ class Relation(ABC):
 
 
 class BelongsTo(Relation):
+
     def __init__(
-        self,
-        local_repo: Type["RepositoryAbstract"],
-        relation_repo: Type["RepositoryAbstract"],
-        foreign_key: Optional[str] = None,
-        local_key: Optional[str] = None,
-        with_trashed: bool = False,
-        cache_time_in_seconds=0,
+            self,
+            local_repo: Type["RepositoryAbstract"],
+            relation_repo: Type["RepositoryAbstract"],
+            foreign_key: Optional[str] = None,
+            local_key: Optional[str] = None,
+            with_trashed: bool = False,
+            cache_time_in_seconds=0,
     ):
         super().__init__()
 
@@ -96,9 +98,8 @@ class BelongsTo(Relation):
         self.cache_time_in_seconds = cache_time_in_seconds
 
     async def apply_many(
-        self, relation_name: str, models: List["ModelAbstract"]
+            self, relation_name: str, models: List["ModelAbstract"]
     ) -> List["ModelAbstract"]:
-
         if len(models) == 0:
             return models
 
@@ -121,7 +122,6 @@ class BelongsTo(Relation):
 
         new_caches = {}
         for model in models:
-
             compare_fn = lambda result: self.compare(
                 self.attribute_getter(model, self.foreign_key),
                 result.__getattribute__(self.local_key),
@@ -142,7 +142,6 @@ class BelongsTo(Relation):
         return models
 
     async def identifiers(self, relation_name: str, models: List["ModelAbstract"]):
-
         if self.cache_time_in_seconds > 0:
             identifiers = []
             cache_keys = [self.cache_key(model, relation_name) for model in models]
@@ -175,6 +174,7 @@ class BelongsTo(Relation):
 
 
 class HasOne(Relation):
+
     async def forget(self, model: "ModelAbstract", relation_key: str):
         await BelongsTo(
             self.local_repo,
@@ -186,13 +186,13 @@ class HasOne(Relation):
         ).forget(model, relation_key)
 
     def __init__(
-        self,
-        local_repo: Type["RepositoryAbstract"],
-        relation_repo: Type["RepositoryAbstract"],
-        foreign_key: Optional[str] = None,
-        local_key: Optional[str] = None,
-        with_trashed: bool = False,
-        cache_time_in_seconds: int = 0,
+            self,
+            local_repo: Type["RepositoryAbstract"],
+            relation_repo: Type["RepositoryAbstract"],
+            foreign_key: Optional[str] = None,
+            local_key: Optional[str] = None,
+            with_trashed: bool = False,
+            cache_time_in_seconds: int = 0,
     ):
         super().__init__()
 
@@ -209,7 +209,7 @@ class HasOne(Relation):
         self.cache_time_in_seconds = cache_time_in_seconds
 
     async def apply_many(
-        self, relation_name: str, models: List["ModelAbstract"]
+            self, relation_name: str, models: List["ModelAbstract"]
     ) -> List["ModelAbstract"]:
         return await BelongsTo(
             self.local_repo,
@@ -222,13 +222,14 @@ class HasOne(Relation):
 
 
 class HasMany(Relation):
+
     def __init__(
-        self,
-        local_repo: Type["RepositoryAbstract"],
-        relation_repo: Type["RepositoryAbstract"],
-        foreign_key: Optional[str] = None,
-        local_key: Optional[str] = None,
-        with_trashed: bool = False,
+            self,
+            local_repo: Type["RepositoryAbstract"],
+            relation_repo: Type["RepositoryAbstract"],
+            foreign_key: Optional[str] = None,
+            local_key: Optional[str] = None,
+            with_trashed: bool = False,
     ):
         super().__init__()
 
@@ -244,9 +245,8 @@ class HasMany(Relation):
         self.relation_repo = relation_repo
 
     async def apply_many(
-        self, relation_name: str, models: List["ModelAbstract"]
+            self, relation_name: str, models: List["ModelAbstract"]
     ) -> List["ModelAbstract"]:
-
         if len(models) == 0:
             return models
 
@@ -290,17 +290,18 @@ class HasMany(Relation):
 
 
 class BelongsToMany(Relation):
+
     def __init__(
-        self,
-        local_repo: Type["RepositoryAbstract"],
-        relation_repo: Type["RepositoryAbstract"],
-        pivot_table: str,
-        local_key: Optional[str] = None,
-        pivot_local_key: Optional[str] = None,
-        relation_key: Optional[str] = None,
-        pivot_relation_key: Optional[str] = None,
-        with_trashed: bool = False,
-        cache_time_in_seconds: int = 0,
+            self,
+            local_repo: Type["RepositoryAbstract"],
+            relation_repo: Type["RepositoryAbstract"],
+            pivot_table: str,
+            local_key: Optional[str] = None,
+            pivot_local_key: Optional[str] = None,
+            relation_key: Optional[str] = None,
+            pivot_relation_key: Optional[str] = None,
+            with_trashed: bool = False,
+            cache_time_in_seconds: int = 0,
     ):
         super().__init__()
 
@@ -324,9 +325,8 @@ class BelongsToMany(Relation):
         self.cache_time_in_seconds = cache_time_in_seconds
 
     async def apply_many(
-        self, relation_name: str, models: List["ModelAbstract"]
+            self, relation_name: str, models: List["ModelAbstract"]
     ) -> List["ModelAbstract"]:
-
         if len(models) == 0:
             return models
 
@@ -339,14 +339,11 @@ class BelongsToMany(Relation):
             results = []
         else:
             params = Parameters()
-            pivot_table = Table(self.pivot_table)
-            relation_table = Table(self.relation_repo.table_name())
+            pivot_table = Table(self.pivot_table, schema=self.relation_repo.schema_name())
+            relation_table = self.relation_repo.table()
             query = self.relation_repo.select_query(self.with_trashed)
-            query = query.inner_join(Table(self.pivot_table))
-            query = query.on(
-                pivot_table.field(self.pivot_relation_key).eq(
-                    relation_table.field(self.relation_key)
-                )
+            query = query.inner_join(pivot_table).on(
+                pivot_table.field(self.pivot_relation_key) == relation_table.field(self.relation_key)
             )
             query = self.query_callback(query)
             query = query.where(
@@ -375,8 +372,8 @@ class BelongsToMany(Relation):
                     model.x_relations[relation_name].append(result)
 
             if (
-                self.cache_time_in_seconds > 0
-                and len(model.x_relations[relation_name]) > 0
+                    self.cache_time_in_seconds > 0
+                    and len(model.x_relations[relation_name]) > 0
             ):
                 new_caches[self.cache_key(model, relation_name)] = model.x_relations[
                     relation_name
@@ -390,7 +387,6 @@ class BelongsToMany(Relation):
         return models
 
     async def identifiers(self, relation_key: str, models: List["ModelAbstract"]):
-
         if self.cache_time_in_seconds > 0:
             identifiers = []
             cache_keys = [self.cache_key(model, relation_key) for model in models]

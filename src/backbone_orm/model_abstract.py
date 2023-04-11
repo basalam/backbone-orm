@@ -1,9 +1,8 @@
 from __future__ import annotations
 
 import abc
-from typing import Optional, Dict, Sequence, Tuple, Any, TypeVar, TYPE_CHECKING, Set, List
+from typing import Optional, Dict, Sequence, Tuple, Any, TYPE_CHECKING, Set, List, TypeVar
 
-import inflect
 from pydantic import BaseModel
 
 if TYPE_CHECKING:
@@ -91,4 +90,3 @@ class ModelAbstract(BaseModel, abc.ABC):
 
 
 T = TypeVar("T", bound=ModelAbstract)
-inflect_engine = inflect.engine()

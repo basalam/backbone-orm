@@ -1,6 +1,6 @@
 from typing import Optional
 
-from backbone_orm.postgres_connection import PostgresConnection
+from .postgres_connection import PostgresConnection
 
 
 class PostgresTransaction:
