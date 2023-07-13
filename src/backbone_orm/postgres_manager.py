@@ -94,7 +94,7 @@ class PoolDriver(DriverAbstract):
         return self.__acquires[key][0]
 
     async def release(self, key: Any) -> None:
-        if key in self.__acquires:
+        if key in self.__acquires.keys():
             await (await self.pool()).release(self.__acquires[key][1])
             del self.__acquires[key]
 
