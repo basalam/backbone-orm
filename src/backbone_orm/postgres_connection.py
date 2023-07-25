@@ -1,6 +1,6 @@
 import traceback
 from time import time
-from typing import List, Tuple, Union, TYPE_CHECKING, Optional
+from typing import List, Tuple, Union, TYPE_CHECKING, Optional, Callable
 
 import asyncpg as asyncpg
 from asyncpg.transaction import Transaction
@@ -22,10 +22,11 @@ class QueryProfile(BaseModel):
     execution_time: float
     query: str
     params: Union[List, Tuple] = []
-    trace : List[str] = []
+    trace: List[str] = []
 
 
 class PostgresConnection:
+
     def __init__(
             self,
             connection: asyncpg.Connection,
@@ -40,6 +41,7 @@ class PostgresConnection:
         self.__allow_wildcard_queries: bool = allow_wildcard_queries
         self.__transactions_enabled: bool = transactions_enabled
         self.__active_transaction: Optional[Transaction] = None
+        self.__active_transaction_callbacks: List[Callable] = []
 
     @property
     def history(self):
@@ -55,6 +57,9 @@ class PostgresConnection:
         from backbone_orm.postgres_transaction import PostgresTransaction
 
         return PostgresTransaction(self, isolation)
+
+    def add_transaction_callback(self, callback: Callable) -> None:
+        self.__active_transaction_callbacks.append(callback)
 
     async def execute(self, query: str, params=None, fetch: bool = False):
         if params is None:
@@ -102,7 +107,6 @@ class PostgresConnection:
         return await self.execute(query, params, fetch=True)
 
     async def begin_transaction(self, isolation: Optional[str] = None):
-
         if not self.__transactions_enabled:
             return
 
@@ -115,12 +119,12 @@ class PostgresConnection:
         self.__transaction_level += 1
 
     async def rollback_transaction(self):
-
         self.__transaction_level -= 1
 
         if self.__is_end_of_transaction():
             await self.__active_transaction.rollback()
             self.__active_transaction = None
+            self.__active_transaction_callbacks = []
 
     async def commit_transaction(self):
         self.__transaction_level -= 1
@@ -128,6 +132,8 @@ class PostgresConnection:
         if self.__is_end_of_transaction():
             await self.__active_transaction.commit()
             self.__active_transaction = None
+            for callback in self.__active_transaction_callbacks: callback()
+            self.__active_transaction_callbacks = []
 
     def __is_wildcard_query(self, query: str) -> bool:
         return (
