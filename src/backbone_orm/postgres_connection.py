@@ -132,7 +132,7 @@ class PostgresConnection:
         if self.__is_end_of_transaction():
             await self.__active_transaction.commit()
             self.__active_transaction = None
-            for callback in self.__active_transaction_callbacks: callback()
+            for callback in self.__active_transaction_callbacks: await callback()
             self.__active_transaction_callbacks = []
 
     def __is_wildcard_query(self, query: str) -> bool:
