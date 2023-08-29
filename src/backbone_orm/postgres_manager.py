@@ -22,6 +22,7 @@ class ConnectionConfig(BaseModel):
     pool_min_size: int = 5
     pool_max_size: int = 25
     pool_acquire_timeout: int = 1
+    pool_max_inactive_connection_lifetime: int = 10
     user: str = ''
     password: str = ''
     host: str = ''
@@ -108,6 +109,7 @@ class PoolDriver(DriverAbstract):
             self.__pool = await asyncpg.create_pool(
                 min_size=self.__config.pool_min_size,
                 max_size=self.__config.pool_max_size,
+                max_inactive_connection_lifetime=self.__config.pool_max_inactive_connection_lifetime,
                 user=self.__config.user,
                 password=self.__config.password,
                 host=self.__config.host,
