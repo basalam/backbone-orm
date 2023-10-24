@@ -83,3 +83,4 @@ python -m pytest
 - 0.0.14 custom order enums
 - 0.0.15 has_relations in ModelAbstract
 - 1.0.0 Adds QueryBuilder, Adds Connection Manager
+- 1.0.9 Extend QueryBuilderAbstract from pypika PostgreSQLQueryBuilder
