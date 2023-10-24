@@ -2,13 +2,13 @@ from abc import ABC
 from datetime import datetime
 from typing import Type, TYPE_CHECKING, Union, List, TypeVar
 
-from pypika.queries import QueryBuilder
+from pypika.dialects import PostgreSQLQueryBuilder
 
 if TYPE_CHECKING:
     from . import RepositoryAbstract
 
 
-class QueryBuilderAbstract(QueryBuilder, ABC):
+class QueryBuilderAbstract(PostgreSQLQueryBuilder, ABC):
 
     def __init__(self, *args, repo: Type["RepositoryAbstract"] = None, **kwargs, ):
         super().__init__(*args, **kwargs)
