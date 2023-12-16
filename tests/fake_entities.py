@@ -1,8 +1,12 @@
 import json
 from typing import Type, List, Optional, Dict, Any
 
-import aioredis
 from pypika import Field, Query, Column, Table
+
+try:
+    from aioredis import Redis
+except Exception as ex:
+    from redis.asyncio import Redis
 
 from backbone_orm.migration_abstract import MigrationAbstract
 from backbone_orm.model_abstract import ModelAbstract, T
@@ -60,13 +64,13 @@ class FakeAuthorRepo(RepositoryAbstract[FakeAuthor, BaseQueryBuilder]):
         return await postgres.acquire()
 
     @classmethod
-    async def redis(cls) -> aioredis.Redis:
+    async def redis(cls) -> Redis:
         return in_memory_redis_connection
 
     @classmethod
     def accessors(cls):
         return {
-            FakeAuthorSchema.NAME    : [add_jr, add_dot],
+            FakeAuthorSchema.NAME: [add_jr, add_dot],
             FakeAuthorSchema.METADATA: lambda property_: json.loads(property_)
             if property_ is not None
             else None,
@@ -160,7 +164,7 @@ class FakePostRepo(RepositoryAbstract[FakePost, BaseQueryBuilder]):
         return await postgres.acquire()
 
     @classmethod
-    async def redis(cls) -> aioredis.Redis:
+    async def redis(cls) -> Redis:
         return in_memory_redis_connection
 
     @classmethod
@@ -236,7 +240,7 @@ class FakeTagRepo(RepositoryAbstract[FakeTag, BaseQueryBuilder]):
         return await postgres.acquire()
 
     @classmethod
-    async def redis(cls) -> aioredis.Redis:
+    async def redis(cls) -> Redis:
         return in_memory_redis_connection
 
     @classmethod
@@ -297,7 +301,7 @@ class FakeCommentRepo(RepositoryAbstract[FakeComment, BaseQueryBuilder]):
         return await postgres.acquire()
 
     @classmethod
-    async def redis(cls) -> aioredis.Redis:
+    async def redis(cls) -> Redis:
         return in_memory_redis_connection
 
     @classmethod
@@ -359,7 +363,7 @@ class FakePostToTagRepo(RepositoryAbstract[FakePostToTag, BaseQueryBuilder]):
         return await postgres.acquire()
 
     @classmethod
-    async def redis(cls) -> aioredis.Redis:
+    async def redis(cls) -> Redis:
         return in_memory_redis_connection
 
     @classmethod
@@ -410,7 +414,7 @@ class FakePostToCommentRepo(RepositoryAbstract[FakePostToComment, BaseQueryBuild
         return await postgres.acquire()
 
     @classmethod
-    async def redis(cls) -> aioredis.Redis:
+    async def redis(cls) -> Redis:
         return in_memory_redis_connection
 
     @classmethod
@@ -442,57 +446,57 @@ class MigrateFakeEntities(MigrationAbstract):
 
     async def setup(self):
         await (await postgres.acquire()).execute(
-            Query.create_table(Table("fake_authors",schema='public'))
-                .columns(
+            Query.create_table(Table("fake_authors", schema='public'))
+            .columns(
                 Column("id", "SERIAL", nullable=False),
                 Column("name", "VARCHAR(100)"),
                 Column("metadata", "jsonb", nullable=True),
             )
-                .primary_key("id")
-                .get_sql()
+            .primary_key("id")
+            .get_sql()
         )
 
         await (await postgres.acquire()).execute(
-            Query.create_table(Table("fake_posts",schema='public'))
-                .columns(
+            Query.create_table(Table("fake_posts", schema='public'))
+            .columns(
                 Column("id", "SERIAL", nullable=False),
                 Column("author_id", "INT"),
                 Column("is_active", "INT DEFAULT(1)"),
                 Column("title", "VARCHAR(100)"),
             )
-                .primary_key("id")
-                .get_sql()
+            .primary_key("id")
+            .get_sql()
         )
 
         await (await postgres.acquire()).execute(
-            Query.create_table(Table("fake_tags",schema='public'))
-                .columns(
+            Query.create_table(Table("fake_tags", schema='public'))
+            .columns(
                 Column("id", "SERIAL", nullable=False), Column("title", "VARCHAR(100)")
             )
-                .primary_key("id")
-                .get_sql()
+            .primary_key("id")
+            .get_sql()
         )
 
         await (await postgres.acquire()).execute(
-            Query.create_table(Table("fake_comments",schema='public'))
-                .columns(
+            Query.create_table(Table("fake_comments", schema='public'))
+            .columns(
                 Column("id", "SERIAL", nullable=False),
                 Column("comment", "VARCHAR(500)"),
             )
-                .primary_key("id")
-                .get_sql()
+            .primary_key("id")
+            .get_sql()
         )
 
         await (await postgres.acquire()).execute(
-            Query.create_table(Table("fake_posts_to_fake_tags",schema='public'))
-                .columns(Column("tag_id", "INT"), Column("post_id", "INT"))
-                .get_sql()
+            Query.create_table(Table("fake_posts_to_fake_tags", schema='public'))
+            .columns(Column("tag_id", "INT"), Column("post_id", "INT"))
+            .get_sql()
         )
 
         await (await postgres.acquire()).execute(
-            Query.create_table(Table("fake_posts_to_fake_comments",schema='public'))
-                .columns(Column("comment_id", "INT"), Column("post_id", "INT"))
-                .get_sql()
+            Query.create_table(Table("fake_posts_to_fake_comments", schema='public'))
+            .columns(Column("comment_id", "INT"), Column("post_id", "INT"))
+            .get_sql()
         )
 
     async def teardown(self):
