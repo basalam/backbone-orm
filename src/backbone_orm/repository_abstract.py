@@ -3,7 +3,11 @@ import pickle
 from abc import ABC, abstractmethod
 from typing import Dict, List, Type, Union, Generic, Optional, Any, Callable, Iterable
 
-import aioredis
+try:
+    from aioredis import Redis
+except Exception as ex:
+    from redis.asyncio import Redis
+
 import inflect
 from backbone_redis_cache import RedisCache
 from pypika import Table, Field, functions
@@ -27,7 +31,7 @@ class RepositoryAbstract(ABC, Generic[T, V]):
 
     @classmethod
     @abstractmethod
-    async def redis(cls) -> aioredis.Redis:
+    async def redis(cls) -> Redis:
         pass
 
     @classmethod
@@ -187,7 +191,8 @@ class RepositoryAbstract(ABC, Generic[T, V]):
         non_cached_models = []
 
         cache_key_fn = (
-            lambda model: f"relations::{cls.table_name()}::{model.__getattribute__(cls.identifier())}::{'__'.join(relations)}"
+            lambda
+                model: f"relations::{cls.table_name()}::{model.__getattribute__(cls.identifier())}::{'__'.join(relations)}"
         )
         caches = await (await cls.cache()).mget(
             [cache_key_fn(model) for model in models]
@@ -548,8 +553,8 @@ class RepositoryAbstract(ABC, Generic[T, V]):
         params = Parameters()
         return await cls.first(
             cls.select_query()
-                .where(Field(cls.identifier()).eq(params.make(identifier)))
-                .select("*"),
+            .where(Field(cls.identifier()).eq(params.make(identifier)))
+            .select("*"),
             params=params,
             relations=relations,
         )
