@@ -3,7 +3,7 @@ from __future__ import annotations
 import abc
 from typing import Optional, Dict, Sequence, Tuple, Any, TYPE_CHECKING, Set, List, TypeVar
 
-from pydantic import BaseModel
+from pydantic import ConfigDict, BaseModel
 
 if TYPE_CHECKING:
     pass
@@ -14,13 +14,11 @@ class RelationNotAppliedException(Exception):
 
 
 class ModelAbstract(BaseModel, abc.ABC):
-    x_ref: Optional[int]
+    x_ref: Optional[int] = None
     x_applied_relations: Set[str] = set()
     x_original: Dict
     x_relations: Dict = {}
-
-    class Config:
-        validate_assignment = True
+    model_config = ConfigDict(validate_assignment=True)
 
     def dict(self, **kwargs):
         hidden_fields = set(

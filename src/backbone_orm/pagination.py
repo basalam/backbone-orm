@@ -3,7 +3,7 @@ from typing import List, Type, Callable, Dict, Optional
 
 from .repository_abstract import RepositoryAbstract
 from .parameters import Parameters
-from pydantic import BaseModel
+from pydantic import ConfigDict, BaseModel, Field
 from pypika import functions
 from pypika.queries import QueryBuilder
 
@@ -14,12 +14,10 @@ class PaginationResponse(BaseModel, ABC):
     per_page: int
     current_page: int
     last_page: int
-    from_: int
+    from_: int = Field(alias='from')
     to: int
 
-    class Config:
-        allow_population_by_field_name = True
-        fields = {'from_': 'from'}
+    model_config = ConfigDict(populate_by_name=True)
 
     @classmethod
     @abstractmethod
