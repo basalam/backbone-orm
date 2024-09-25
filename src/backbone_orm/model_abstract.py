@@ -16,7 +16,7 @@ class RelationNotAppliedException(Exception):
 class ModelAbstract(BaseModel, abc.ABC):
     x_ref: Optional[int] = None
     x_applied_relations: Set[str] = set()
-    x_original: Dict
+    x_original: Dict = {}
     x_relations: Dict = {}
     model_config = ConfigDict(validate_assignment=True)
 
