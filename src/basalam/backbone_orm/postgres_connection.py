@@ -7,7 +7,7 @@ from asyncpg.transaction import Transaction
 from pydantic import BaseModel
 
 if TYPE_CHECKING:
-    from backbone_orm.postgres_transaction import PostgresTransaction
+    from basalam.backbone_orm.postgres_transaction import PostgresTransaction
 
 
 class WildcardQueryNotAllowedException(Exception):
@@ -54,7 +54,7 @@ class PostgresConnection:
         self.__debug_enabled = False
 
     def transaction(self, isolation: Optional[str] = None) -> "PostgresTransaction":
-        from backbone_orm.postgres_transaction import PostgresTransaction
+        from basalam.backbone_orm.postgres_transaction import PostgresTransaction
 
         return PostgresTransaction(self, isolation)
 

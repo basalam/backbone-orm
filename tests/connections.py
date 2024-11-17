@@ -4,8 +4,8 @@ except Exception as ex:
     from redis.asyncio import Redis
 
 
-from backbone_orm import PostgresManager
-from backbone_orm.postgres_manager import ConnectionConfig, DriverEnum
+from basalam.backbone_orm import PostgresManager
+from basalam.backbone_orm.postgres_manager import ConnectionConfig, DriverEnum
 
 postgres = PostgresManager(
     default=DriverEnum.TEST,

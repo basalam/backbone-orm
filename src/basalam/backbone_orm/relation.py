@@ -7,8 +7,8 @@ from pypika.queries import QueryBuilder
 from .parameters import Parameters
 
 if TYPE_CHECKING:
-    from backbone_orm.model_abstract import ModelAbstract
-    from backbone_orm.repository_abstract import RepositoryAbstract
+    from basalam.backbone_orm.model_abstract import ModelAbstract
+    from basalam.backbone_orm.repository_abstract import RepositoryAbstract
 
 
 class Relation(ABC):

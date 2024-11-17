@@ -6,7 +6,7 @@ from .model_abstract import T
 from .relation import Relation
 
 if TYPE_CHECKING:
-    from backbone_orm.repository_abstract import RepositoryAbstract
+    from basalam.backbone_orm.repository_abstract import RepositoryAbstract
 
 
 class RelationApplier:

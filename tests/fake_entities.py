@@ -8,12 +8,12 @@ try:
 except Exception as ex:
     from redis.asyncio import Redis
 
-from backbone_orm.migration_abstract import MigrationAbstract
-from backbone_orm.model_abstract import ModelAbstract, T
-from backbone_orm.model_schema_abstract import ModelSchemaAbstract
-from backbone_orm.postgres_connection import PostgresConnection
-from backbone_orm.query_builder_abstract import BaseQueryBuilder
-from backbone_orm.repository_abstract import RepositoryAbstract
+from basalam.backbone_orm.migration_abstract import MigrationAbstract
+from basalam.backbone_orm.model_abstract import ModelAbstract, T
+from basalam.backbone_orm import ModelSchemaAbstract
+from basalam.backbone_orm.postgres_connection import PostgresConnection
+from basalam.backbone_orm.query_builder_abstract import BaseQueryBuilder
+from basalam.backbone_orm.repository_abstract import RepositoryAbstract
 from .connections import in_memory_redis_connection, postgres
 
 
