@@ -26,6 +26,6 @@ setup(
         "asyncpg>=0.28.0",
         "testing.postgresql>=1.3.0",
         "aioredis>=2.0.1",
-        "pydantic>=1.10.19",
+        "pydantic>=2.9.1",
     ]
 )
