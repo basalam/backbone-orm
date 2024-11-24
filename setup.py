@@ -10,6 +10,7 @@ setup(
     long_description_content_type="text/markdown",
     url="https://github.com/basalam/backbone-orm",
     packages=find_namespace_packages(where='src'),
+    namespace_packages=["basalam"],
     package_dir={'': 'src'},
     classifiers=[
         "Programming Language :: Python :: 3",
@@ -19,4 +20,12 @@ setup(
     python_requires='>=3.6',
     setuptools_git_versioning={"enabled": True},
     setup_requires=["setuptools-git-versioning"],
+    isntall_requires=[
+        "basalam.backbone-redis-cache>=0.0.9",
+        "PyPika>=0.48.9",
+        "asyncpg>=0.28.0",
+        "testing.postgresql>=1.3.0",
+        "aioredis>=2.0.1",
+        "pydantic>=1.10.19",
+    ]
 )

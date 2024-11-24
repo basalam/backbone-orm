@@ -9,7 +9,7 @@ except Exception as ex:
     from redis.asyncio import Redis
 
 import inflect
-from backbone_redis_cache import RedisCache
+from basalam.backbone_redis_cache import RedisCache
 from pypika import Table, Field, functions
 from pypika.queries import QueryBuilder
 
