@@ -9,8 +9,7 @@ setup(
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
     url="https://github.com/basalam/backbone-orm",
-    packages=find_namespace_packages(where='src'),
-    namespace_packages=["basalam"],
+    packages=find_namespace_packages(where='src', include=['basalam.backbone-orm']),
     package_dir={'': 'src'},
     classifiers=[
         "Programming Language :: Python :: 3",
