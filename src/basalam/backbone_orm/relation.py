@@ -296,6 +296,7 @@ class BelongsToMany(Relation):
             local_repo: Type["RepositoryAbstract"],
             relation_repo: Type["RepositoryAbstract"],
             pivot_table: str,
+            pivot_schema: Optional[str] = None,
             local_key: Optional[str] = None,
             pivot_local_key: Optional[str] = None,
             relation_key: Optional[str] = None,
@@ -316,6 +317,7 @@ class BelongsToMany(Relation):
 
         self.with_trashed = with_trashed
         self.pivot_table = pivot_table
+        self.pivot_schema = pivot_schema
         self.local_key = local_key
         self.pivot_local_key = pivot_local_key
         self.relation_key = relation_key
@@ -339,7 +341,7 @@ class BelongsToMany(Relation):
             results = []
         else:
             params = Parameters()
-            pivot_table = Table(self.pivot_table, schema=self.relation_repo.schema_name())
+            pivot_table = Table(self.pivot_table, schema=self.pivot_schema if self.pivot_schema else self.relation_repo.schema_name())
             relation_table = self.relation_repo.table()
             query = self.relation_repo.select_query(self.with_trashed)
             query = query.inner_join(pivot_table).on(
