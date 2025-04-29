@@ -545,14 +545,17 @@ class RepositoryAbstract(ABC, Generic[T, V]):
 
     @classmethod
     async def find_by_id(
-            cls, identifier: any, relations: Optional[List] = None
+            cls,
+            identifier: any,
+            relations: Optional[List] = None,
+            with_thrashed: bool = False,
     ) -> Union[T, None]:
         if identifier is None:
             return None
 
         params = Parameters()
         return await cls.first(
-            cls.select_query()
+            cls.select_query(with_thrashed=with_thrashed)
             .where(Field(cls.identifier()).eq(params.make(identifier)))
             .select("*"),
             params=params,
