@@ -12,6 +12,7 @@ Backbone ORM is a lightweight, asynchronous Object-Relational Mapper (ORM) for P
 
 - python 3.10+
 - pypika 0.48+
+- pydantic 2.0+
 - basalam.backbone-redis-cache 0.0.11+
 
 #### Installation & Upgrade
