@@ -23,11 +23,11 @@ class ModelAbstract(BaseModel, abc.ABC):
     def dict(self, **kwargs):
         hidden_fields = set(
             attribute_name
-            for attribute_name, model_field in self.__fields__.items()
-            if model_field.name[0:2] == "x_"
+            for attribute_name in self.model_fields.keys()
+            if attribute_name[0:2] == "x_"
         )
         kwargs.setdefault("exclude", hidden_fields)
-        return super().dict(**kwargs)
+        return super().model_dump(**kwargs)
 
     def __repr_args__(self) -> Sequence[Tuple[Optional[str], Any]]:
         return [
