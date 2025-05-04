@@ -1,5 +1,5 @@
 ## Backbone ORM
-Backbone ORM is a lightweight, asynchronous Object-Relational Mapper (ORM) for Python, designed to provide a clean and efficient interface for interacting with PostgreSQL databases. It leverages type hints and asynchronous programming to enable scalable and maintainable database operations.
+Backbone ORM is a lightweight, asynchronous Object-Relational Mapper (ORM) for Python, built on top of the PyPika SQL query builder. It provides a clean and efficient interface for interacting with PostgreSQL databases, leveraging type hints and asynchronous programming to enable scalable and maintainable database operations.
 
 #### Features
 - Asynchronous Support: Built with asyncio to support non-blocking database operations.
@@ -10,7 +10,7 @@ Backbone ORM is a lightweight, asynchronous Object-Relational Mapper (ORM) for P
 
 #### Requirements 
 
-- Python 3.10+
+- python 3.10+
 - pypika 0.48+
 - basalam.backbone-redis-cache 0.0.11+
 
