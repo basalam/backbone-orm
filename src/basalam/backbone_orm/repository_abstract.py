@@ -670,8 +670,9 @@ class RepositoryAbstract(ABC, Generic[T, V]):
             foreign_key: Optional[str] = None,
             local_key: Optional[str] = None,
             with_trashed: bool = False,
+            cache_time_in_seconds=0,
     ):
-        return HasMany(cls, repo, foreign_key, local_key, with_trashed)
+        return HasMany(cls, repo, foreign_key, local_key, with_trashed, cache_time_in_seconds)
 
     @classmethod
     def belongs_to_many(
