@@ -192,7 +192,7 @@ class RepositoryAbstract(ABC, Generic[T, V]):
 
         cache_key_fn = (
             lambda
-                model: f"relations::{cls.table_name()}::{model.__getattribute__(cls.identifier())}::{'__'.join(relations)}"
+            model: f"relations::{cls.table_name()}::{model.__getattribute__(cls.identifier())}::{'__'.join(relations)}"
         )
         caches = await (await cls.cache()).mget(
             [cache_key_fn(model) for model in models]
@@ -207,7 +207,8 @@ class RepositoryAbstract(ABC, Generic[T, V]):
 
         await cls.apply_relations(non_cached_models, relations)
 
-        top_level_relations = set([relation.split(".")[0] for relation in relations])
+        top_level_relations = set([relation.split(".")[0]
+                                  for relation in relations])
 
         new_caches = {
             cache_key_fn(model): {
@@ -545,17 +546,14 @@ class RepositoryAbstract(ABC, Generic[T, V]):
 
     @classmethod
     async def find_by_id(
-            cls,
-            identifier: any,
-            relations: Optional[List] = None,
-            with_thrashed: bool = False,
+            cls, identifier: any, relations: Optional[List] = None
     ) -> Union[T, None]:
         if identifier is None:
             return None
 
         params = Parameters()
         return await cls.first(
-            cls.select_query(with_thrashed=with_thrashed)
+            cls.select_query()
             .where(Field(cls.identifier()).eq(params.make(identifier)))
             .select("*"),
             params=params,
@@ -589,7 +587,8 @@ class RepositoryAbstract(ABC, Generic[T, V]):
             dump: bool = False,
     ) -> Union[float, int]:
         if column != "*":
-            query = query.select(functions.Count(column).distinct().as_("_aggregate_"))
+            query = query.select(functions.Count(
+                column).distinct().as_("_aggregate_"))
         else:
             query = query.select(functions.Count(column).as_("_aggregate_"))
         if dump:
@@ -633,8 +632,10 @@ class RepositoryAbstract(ABC, Generic[T, V]):
 
         results = await cls.execute_and_fetch(query, params=params)
 
-        if len(results) == 0: return 0
-        if results[0]["_aggregate_"] is None: return 0
+        if len(results) == 0:
+            return 0
+        if results[0]["_aggregate_"] is None:
+            return 0
         return results[0]["_aggregate_"]
 
     @classmethod
@@ -678,7 +679,6 @@ class RepositoryAbstract(ABC, Generic[T, V]):
             cls,
             repo: Type["RepositoryAbstract"],
             pivot_table: str,
-            pivot_schema: Optional[str] = None,
             local_key: Optional[str] = None,
             pivot_local_key: Optional[str] = None,
             relation_key: Optional[str] = None,
@@ -690,7 +690,6 @@ class RepositoryAbstract(ABC, Generic[T, V]):
             cls,
             repo,
             pivot_table,
-            pivot_schema,
             local_key,
             pivot_local_key,
             relation_key,
@@ -768,3 +767,8 @@ class RepositoryAbstract(ABC, Generic[T, V]):
     def forget_relation_cache(cls, model: T, relation_name: str) -> None:
         relation: Relation = getattr(cls, relation_name + "_relation")()
         relation.forget(model, relation_name)
+
+    @classmethod
+    def filter(cls, **kwargs) -> QueryBuilder:
+        query: QueryBuilder = cls.select_query().filter_query(**kwargs)
+        return query.select_star()
