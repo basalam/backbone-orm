@@ -17,7 +17,7 @@ from .model_schema_abstract import ModelSchemaAbstract
 from .parameters import Parameters
 from .postgres_connection import PostgresConnection
 from .relation_applier import RelationApplier
-from .query_builder_abstract import QueryBuilderAbstract, V, BaseQueryBuilder
+from .query_builder_abstract import QueryBuilderAbstract, V
 from .model_abstract import T
 from .relation import Relation, BelongsTo, HasOne, HasMany, BelongsToMany
 
@@ -36,7 +36,7 @@ class RepositoryAbstract(ABC, Generic[T, V]):
 
     @classmethod
     def query_builder(cls) -> QueryBuilderAbstract:
-        return BaseQueryBuilder()
+        return QueryBuilderAbstract()
 
     @classmethod
     @abstractmethod
