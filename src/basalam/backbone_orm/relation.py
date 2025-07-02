@@ -230,6 +230,7 @@ class HasMany(Relation):
             foreign_key: Optional[str] = None,
             local_key: Optional[str] = None,
             with_trashed: bool = False,
+            cache_time_in_seconds=0
     ):
         super().__init__()
 
@@ -243,6 +244,7 @@ class HasMany(Relation):
         self.local_key = local_key
         self.local_repo = local_repo
         self.relation_repo = relation_repo
+        self.cache_time_in_seconds = cache_time_in_seconds
 
     async def apply_many(
             self, relation_name: str, models: List["ModelAbstract"]
@@ -250,7 +252,28 @@ class HasMany(Relation):
         if len(models) == 0:
             return models
 
-        identifiers = self.identifiers(relation_name, models)
+        for model in models:
+            model.forget_relation(relation_name)
+
+        identifiers = []
+        caches = {}
+
+        if self.cache_time_in_seconds > 0:
+            cache_keys = [self.cache_key(model, relation_name) for model in models]
+            caches = await (await self.local_repo.cache()).mget(cache_keys)
+            for index, model in enumerate(models):
+                if caches[index] is not None:
+                    model.set_relation(relation_name, caches[index])
+                else:
+                    identifiers.append(self.attribute_getter(model, self.local_key))
+        else:
+            identifiers = [
+                self.attribute_getter(model, self.local_key) for model in models
+            ]
+
+        identifiers = {
+            identifier for identifier in identifiers if identifier is not None
+        }
 
         if len(identifiers) == 0:
             results = []
@@ -262,10 +285,11 @@ class HasMany(Relation):
             )
             query = query.select("*")
             query = self.query_callback(query)
-            results = await self.relation_repo.get(query, params=params)
+            results = await self.relation_repo.get(query, params)
 
+        new_caches = {}
         for model in models:
-            relations = [
+            matches = [
                 result
                 for result in results
                 if self.compare(
@@ -273,20 +297,22 @@ class HasMany(Relation):
                     self.attribute_getter(result, self.foreign_key),
                 )
             ]
-            model.set_relation(relation_name, relations)
+
+            if len(matches) > 0:
+                model.set_relation(relation_name, matches)
+
+            if not matches and (not caches or all(cache is None for cache in caches)):
+                model.set_relation(relation_name, [])
+
+            if self.cache_time_in_seconds > 0 and len(matches) > 0:
+                new_caches[self.cache_key(model, relation_name)] = matches
+
+        if len(new_caches.keys()) > 0:
+            await (await self.local_repo.cache()).mset(
+                new_caches, self.cache_time_in_seconds
+            )
 
         return models
-
-    def identifiers(self, relation_key: str, models: List["ModelAbstract"]):
-        identifiers = [self.attribute_getter(model, self.local_key) for model in models]
-        identifiers = [
-            identifier for identifier in identifiers if identifier is not None
-        ]
-        identifiers = set(identifiers)
-        return identifiers
-
-    def forget(self, model: "ModelAbstract", relation_key: str):
-        pass
 
 
 class BelongsToMany(Relation):
