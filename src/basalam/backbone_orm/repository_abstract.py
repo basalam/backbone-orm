@@ -765,9 +765,9 @@ class RepositoryAbstract(ABC, Generic[T, V]):
             return await cls.get(query, relations=relations, params=params)
 
     @classmethod
-    def forget_relation_cache(cls, model: T, relation_name: str) -> None:
+    async def forget_relation_cache(cls, model: T, relation_name: str) -> None:
         relation: Relation = getattr(cls, relation_name + "_relation")()
-        relation.forget(model, relation_name)
+        await relation.forget(model, relation_name)
 
     @classmethod
     def filter(cls, **kwargs) -> QueryBuilder:
