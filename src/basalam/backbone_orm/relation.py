@@ -255,25 +255,7 @@ class HasMany(Relation):
         for model in models:
             model.forget_relation(relation_name)
 
-        identifiers = []
-        caches = {}
-
-        if self.cache_time_in_seconds > 0:
-            cache_keys = [self.cache_key(model, relation_name) for model in models]
-            caches = await (await self.local_repo.cache()).mget(cache_keys)
-            for index, model in enumerate(models):
-                if caches[index] is not None:
-                    model.set_relation(relation_name, caches[index])
-                else:
-                    identifiers.append(self.attribute_getter(model, self.local_key))
-        else:
-            identifiers = [
-                self.attribute_getter(model, self.local_key) for model in models
-            ]
-
-        identifiers = {
-            identifier for identifier in identifiers if identifier is not None
-        }
+        identifiers = await self.identifiers(relation_name, models)
 
         if len(identifiers) == 0:
             results = []
@@ -300,8 +282,7 @@ class HasMany(Relation):
 
             if len(matches) > 0:
                 model.set_relation(relation_name, matches)
-
-            if not matches and (not caches or all(cache is None for cache in caches)):
+            elif model.__getattribute__(self.local_repo.identifier()) in identifiers:
                 model.set_relation(relation_name, [])
 
             if self.cache_time_in_seconds > 0 and len(matches) > 0:
@@ -313,6 +294,36 @@ class HasMany(Relation):
             )
 
         return models
+
+    async def identifiers(self, relation_name: str, models: List["ModelAbstract"]):
+        if self.cache_time_in_seconds > 0:
+            identifiers = []
+            cache_keys = [self.cache_key(model, relation_name) for model in models]
+            caches = await (await self.local_repo.cache()).mget(cache_keys)
+            for index, model in enumerate(models):
+                if caches[index] is not None:
+                    model.set_relation(relation_name, caches[index])
+                else:
+                    identifiers.append(self.attribute_getter(model, self.local_key))
+        else:
+            identifiers = [
+                self.attribute_getter(model, self.local_key) for model in models
+            ]
+
+        identifiers = {
+            identifier for identifier in identifiers if identifier is not None
+        }
+        return identifiers
+
+    def cache_key(self, model: "ModelAbstract", relation_key: str):
+        table = self.local_repo.table_name()
+        identifier = model.__getattribute__(self.local_repo.identifier())
+        return f"relation::has_many::{table}::{identifier}::{relation_key}"
+
+    async def forget(self, model: "ModelAbstract", relation_key: str):
+        await (await self.local_repo.cache()).forget(
+            self.cache_key(model, relation_key)
+        )
 
 
 class BelongsToMany(Relation):
