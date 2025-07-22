@@ -86,6 +86,7 @@ class PoolDriver(DriverAbstract):
         self.__config = config
         self.__is_creating_pool: bool = False
         self.__pool: Optional[asyncpg.Pool] = None
+        self.__pool_lock = asyncio.Lock()
         self.__acquires: Dict[str, Tuple[PostgresConnection, PoolAcquireContext]] = {}
 
     async def acquire(self, key: Any) -> PostgresConnection:
@@ -100,26 +101,21 @@ class PoolDriver(DriverAbstract):
             del self.__acquires[key]
 
     async def pool(self):
-        if self.__is_creating_pool:
-            await asyncio.sleep(0.1)
-            return await self.pool()
-
         if self.__pool is None:
-            self.__is_creating_pool = True
-            self.__pool = await asyncpg.create_pool(
-                min_size=self.__config.pool_min_size,
-                max_size=self.__config.pool_max_size,
-                max_inactive_connection_lifetime=self.__config.pool_max_inactive_connection_lifetime,
-                user=self.__config.user,
-                password=self.__config.password,
-                host=self.__config.host,
-                port=self.__config.port,
-                database=self.__config.db,
-                timeout=self.__config.timeout,
-                server_settings=dict(**self.__config.server_settings),
-            )
-            self.__is_creating_pool = False
-
+            async with self.__pool_lock:
+                if self.__pool is None:
+                    self.__pool = await asyncpg.create_pool(
+                        min_size=self.__config.pool_min_size,
+                        max_size=self.__config.pool_max_size,
+                        max_inactive_connection_lifetime=self.__config.pool_max_inactive_connection_lifetime,
+                        user=self.__config.user,
+                        password=self.__config.password,
+                        host=self.__config.host,
+                        port=self.__config.port,
+                        database=self.__config.db,
+                        timeout=self.__config.timeout,
+                        server_settings=dict(**self.__config.server_settings),
+                    )
         return self.__pool
 
 
