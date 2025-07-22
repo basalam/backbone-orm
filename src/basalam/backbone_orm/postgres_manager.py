@@ -86,6 +86,7 @@ class PoolDriver(DriverAbstract):
         self.__config = config
         self.__is_creating_pool: bool = False
         self.__pool: Optional[asyncpg.Pool] = None
+        self.__pool_lock = asyncio.Lock()
         self.__acquires: Dict[str, Tuple[PostgresConnection, PoolAcquireContext]] = {}
 
     async def acquire(self, key: Any) -> PostgresConnection:
