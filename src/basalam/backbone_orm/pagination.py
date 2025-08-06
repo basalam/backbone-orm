@@ -49,7 +49,9 @@ class PaginationResponse(BaseModel, ABC):
             aggregate_query._orderbys = []
             aggregate_query = aggregate_query.select(functions.Count('*').as_('total'))
 
-        aggregations = (await (cls.repo()).execute_and_fetch(query=aggregate_query, params=params))[0]
+        aggregations = (await (cls.repo()).execute_and_fetch(query=aggregate_query, params=params))
+
+        aggregations = aggregations[0] if aggregations else {'total': 0}
 
         return cls(
             data=[await (cls.mapper())(entity) for entity in entities],
