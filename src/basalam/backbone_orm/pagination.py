@@ -4,7 +4,7 @@ from typing import List, Type, Callable, Dict, Optional
 from .repository_abstract import RepositoryAbstract
 from .parameters import Parameters
 from pydantic import ConfigDict, BaseModel, Field
-from pypika import functions
+from pypika import functions, Query
 from pypika.queries import QueryBuilder
 
 
@@ -45,9 +45,14 @@ class PaginationResponse(BaseModel, ABC):
 
         if aggregate_query is None:
             aggregate_query = query.__copy__()
-            aggregate_query._selects = []
             aggregate_query._orderbys = []
-            aggregate_query = aggregate_query.select(functions.Count('*').as_('total'))
+            if query._groupbys:
+                aggregate_query._limit = None
+                aggregate_query._offset = None
+                aggregate_query = Query.from_(aggregate_query).select(functions.Count('*').as_('total'))
+            else:
+                aggregate_query._selects = []
+                aggregate_query = aggregate_query.select(functions.Count('*').as_('total'))
 
         aggregations = (await (cls.repo()).execute_and_fetch(query=aggregate_query, params=params))
 
