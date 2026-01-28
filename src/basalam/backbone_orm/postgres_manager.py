@@ -170,3 +170,6 @@ class PostgresManager:
 
     async def release(self, driver: Optional[DriverEnum], *args, **kwargs) -> None:
         return await self.__drivers[driver or self.__default].release(*args, **kwargs)
+
+    def get_driver(self, driver: DriverEnum) -> DriverEnum:
+        return self.__drivers[driver]
