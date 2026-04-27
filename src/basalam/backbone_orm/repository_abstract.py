@@ -502,12 +502,12 @@ class RepositoryAbstract(ABC, Generic[T, V]):
         return await cls.hard_delete_by_id(identifier)
 
     @classmethod
-    def delete_model(cls, model: T):
-        return cls.delete_by_id(model.__getattribute__(cls.identifier()))
+    async def delete_model(cls, model: T):
+        return await cls.delete_by_id(model.__getattribute__(cls.identifier()))
 
     @classmethod
-    def delete_models(cls, models: List[T]):
-        return cls.delete_by_id(
+    async def delete_models(cls, models: List[T]):
+        return await cls.delete_by_id(
             [model.__getattribute__(cls.identifier()) for model in models]
         )
 
