@@ -574,12 +574,12 @@ class RepositoryAbstract(ABC, Generic[T, V]):
         return cls.select_query().where(*args, **kwargs)
 
     @classmethod
-    async def exists(cls, query: QueryBuilder) -> bool:
-        return await cls.first(query) is not None
+    async def exists(cls, query: QueryBuilder, params: Optional[Parameters] = None) -> bool:
+        return await cls.first(query, params) is not None
 
     @classmethod
-    async def doesnt_exist(cls, query: QueryBuilder) -> bool:
-        return await cls.exists(query) is False
+    async def doesnt_exist(cls, query: QueryBuilder, params: Optional[Parameters] = None) -> bool:
+        return await cls.exists(query, params) is False
 
     @classmethod
     async def count(
